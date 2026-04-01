@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KEI Project Search by Research Focus</title>
+    <title>KEI Research Project Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -13,517 +14,708 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #f4f7f9;
+            color: #2d2d2d;
             min-height: 100vh;
-            color: #333;
         }
-        
-        .container {
+
+        /* ── SITE HEADER ── */
+        .site-header {
+            background: #fff;
+            border-bottom: 1px solid #e0e8ec;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        
-        .main-content {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .research-fields-section {
-            padding: 30px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #2c3e50;
+            padding: 0 32px;
+            height: 68px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: space-between;
         }
-        
-        .research-fields-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .field-card {
-            border: 1px solid #e0e7ff;
-            border-radius: 8px;
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #fafbff;
-            position: relative;
-            overflow: hidden;
-            text-align: center;
-            min-height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .field-card:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            border-color: #4f46e5;
-            background: #f8faff;
-        }
-        
-        .field-card.selected {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: white;
-            border-color: #4338ca;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
-        }
-        
-        .field-name {
-            font-weight: 500;
-            font-size: 0.85rem;
-            line-height: 1.3;
-            letter-spacing: -0.01em;
-        }
-        
-        .selection-summary {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            border-left: 4px solid #2196f3;
-        }
-        
-        .selection-summary.show {
+
+        .logo-area img {
+            height: 36px;
+            width: auto;
             display: block;
         }
-        
-        .selection-summary.hide {
-            display: none;
+
+        .header-nav-title {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #6D6E71;
+            letter-spacing: 0.02em;
         }
-        
-        .selected-fields {
+
+        /* ── HERO SECTION ── */
+        .hero-section {
+            background: linear-gradient(135deg, #007a63 0%, #29ABE2 100%);
+            padding: 52px 32px 48px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .hero-section h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 10px;
+        }
+
+        .hero-section p {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.8);
+            max-width: 520px;
+            margin: 0 auto 36px;
+            line-height: 1.6;
+        }
+
+        .hero-stats {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.22);
+            border-radius: 12px;
+            padding: 16px 40px;
+            backdrop-filter: blur(4px);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 28px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.72);
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .stat-divider {
+            width: 1px;
+            height: 44px;
+            background: rgba(255,255,255,0.25);
+        }
+
+        /* ── MAIN CONTAINER ── */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* ── PANEL ── */
+        .panel {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 22px 28px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #00A887;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background: #00A887;
+            border-radius: 2px;
+        }
+
+        .btn-text {
+            font-size: 0.82rem;
+            color: #5a7a8a;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 0;
+            font-family: inherit;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .btn-text:hover {
+            color: #00A887;
+        }
+
+        /* ── RESEARCH FIELD GRID ── */
+        .research-fields-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 10px;
+            padding: 18px 28px 24px;
+        }
+
+        .field-card {
+            border: 1.5px solid #b2dde8;
+            border-radius: 10px;
+            padding: 14px 16px 12px;
+            cursor: pointer;
+            transition: all 0.22s ease;
+            background: #fafdff;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+            position: relative;
+        }
+
+        .field-card:hover {
+            border-color: #29ABE2;
+            background: #f0f8fd;
+            box-shadow: 0 2px 10px rgba(41,171,226,0.14);
+            transform: translateY(-1px);
+        }
+
+        .field-card.selected {
+            background: #00A887;
+            border-color: #00A887;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(0,168,135,0.30);
+            transform: translateY(-2px);
+        }
+
+        .field-name {
+            font-size: 0.84rem;
+            font-weight: 500;
+            line-height: 1.35;
+            color: #2d2d2d;
+        }
+
+        .field-card.selected .field-name {
+            color: #fff;
+        }
+
+        .field-count-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: #e0f4fb;
+            color: #0077a8;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .field-card.selected .field-count-badge {
+            background: rgba(255,255,255,0.22);
+            color: rgba(255,255,255,0.92);
+        }
+
+        /* ── SELECTION SUMMARY ── */
+        .selection-summary {
+            margin: 0 28px 20px;
+            background: #f0faff;
+            border-left: 4px solid #29ABE2;
+            border-radius: 0 8px 8px 0;
+            padding: 14px 16px;
+        }
+
+        .selection-summary.hide { display: none; }
+        .selection-summary.show { display: block; }
+
+        .selection-summary-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #007a63;
+            margin-bottom: 10px;
+        }
+
+        .selected-fields-row {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 10px;
         }
-        
+
         .selected-tag {
-            background: #2196f3;
-            color: white;
-            padding: 6px 12px;
+            background: #00A887;
+            color: #fff;
+            padding: 5px 12px;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
         }
-        
+
         .remove-tag {
             cursor: pointer;
-            font-weight: bold;
-            width: 16px;
-            height: 16px;
+            width: 15px;
+            height: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
             background: rgba(255,255,255,0.2);
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1;
+            transition: background 0.15s;
         }
-        
-        .remove-tag:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        
-        .results-section {
-            padding: 30px;
-        }
-        
-        .results-header {
+
+        .remove-tag:hover { background: rgba(255,255,255,0.35); }
+
+        /* ── RESULTS SECTION ── */
+        .results-panel-header {
+            padding: 20px 28px 16px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            justify-content: space-between;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 14px;
+            border-bottom: 1px solid #eef2ef;
         }
-        
+
         .results-info {
-            font-size: 1.1rem;
-            color: #2c3e50;
+            font-size: 0.95rem;
             font-weight: 600;
+            color: #2d2d2d;
         }
-        
-        .action-buttons {
+
+        .results-info span {
+            color: #00A887;
+        }
+
+        .results-controls {
             display: flex;
+            align-items: center;
             gap: 10px;
             flex-wrap: wrap;
         }
-        
+
+        .sort-select {
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: #2d2d2d;
+            background: #f4f7f9;
+            border: 1.5px solid #b2dde8;
+            border-radius: 7px;
+            padding: 7px 12px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .sort-select:focus { border-color: #00A887; }
+
+        /* ── BUTTONS ── */
         .btn {
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 8px;
+            border-radius: 7px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
+            font-family: inherit;
+            font-size: 0.82rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
+            gap: 6px;
+            white-space: nowrap;
         }
-        
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        .btn-outline {
+            background: #fff;
+            color: #5a7a8a;
+            border: 1.5px solid #b2dde8;
         }
-        
-        .btn-primary {
-            background: #2196f3;
-            color: white;
+
+        .btn-outline:hover:not(:disabled) {
+            background: #f0faff;
+            border-color: #00A887;
+            color: #00A887;
         }
-        
-        .btn-primary:hover:not(:disabled) {
-            background: #1976d2;
-            transform: translateY(-1px);
+
+        .btn-excel {
+            background: #e0f8f4;
+            color: #007a63;
+            border: 1.5px solid #7dd4c8;
         }
-        
-        .btn-success {
-            background: #4caf50;
-            color: white;
+
+        .btn-excel:hover:not(:disabled) {
+            background: #b2dde8;
+            border-color: #00A887;
         }
-        
-        .btn-success:hover:not(:disabled) {
-            background: #388e3c;
-            transform: translateY(-1px);
+
+        .btn-pdf {
+            background: #00A887;
+            color: #fff;
+            border: 1.5px solid #00A887;
         }
-        
-        .btn-warning {
-            background: #ff9800;
-            color: white;
+
+        .btn-pdf:hover:not(:disabled) {
+            background: #007a63;
         }
-        
-        .btn-warning:hover:not(:disabled) {
-            background: #f57c00;
-            transform: translateY(-1px);
+
+        .btn-refresh {
+            background: #fff;
+            color: #5a7a8a;
+            border: 1.5px solid #b2dde8;
+            padding: 8px 10px;
         }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover:not(:disabled) {
-            background: #5a6268;
-            transform: translateY(-1px);
-        }
-        
+
+        .btn-refresh:hover { background: #f0faff; }
+
+        /* ── PROJECTS LIST ── */
         .projects-list {
-            display: grid;
-            gap: 15px;
+            padding: 20px 28px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
-        
+
         .project-card {
             background: #fff;
-            border: 1px solid #e0e0e0;
+            border: 1.5px solid #dde8ec;
             border-radius: 10px;
-            padding: 20px;
-            transition: all 0.3s ease;
-            border-left: 4px solid #2196f3;
+            padding: 18px 20px 16px 20px;
+            border-left: 4px solid #00A887;
             position: relative;
+            transition: all 0.2s ease;
         }
-        
+
+        .project-card:hover {
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+            transform: translateY(-1px);
+            border-color: #7dd4c8;
+        }
+
         .project-card.selected {
-            background: #f8f9ff;
-            border-color: #4f46e5;
+            background: #f0faff;
+            border-color: #00A887;
+            border-left-color: #00A887;
         }
-        
+
         .project-checkbox {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 18px;
-            height: 18px;
+            top: 18px;
+            right: 18px;
+            width: 16px;
+            height: 16px;
             cursor: pointer;
+            accent-color: #00A887;
         }
-        
-        .project-card:hover {
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transform: translateY(-1px);
-        }
-        
+
         .project-title {
-            font-size: 1.1rem;
+            font-size: 0.97rem;
             font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 12px;
-            line-height: 1.4;
+            color: #2d2d2d;
+            line-height: 1.45;
+            margin-bottom: 10px;
+            padding-right: 28px;
         }
-        
-        .project-details {
+
+        .project-meta {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
-            color: #555;
-            font-size: 0.9rem;
+            gap: 16px;
             margin-bottom: 12px;
-            align-items: center;
         }
-        
-        .detail-item {
+
+        .meta-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 0.82rem;
         }
-        
-        .detail-label {
+
+        .meta-label {
             font-weight: 600;
-            color: #666;
-            font-size: 0.8rem;
+            color: #7a95a8;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            min-width: fit-content;
+            font-size: 0.7rem;
+            letter-spacing: 0.06em;
         }
-        
-        .detail-value {
-            color: #2c3e50;
+
+        .meta-value {
+            color: #1a3a4a;
             font-weight: 500;
         }
-        
-        .project-focuses {
+
+        .project-badges {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
         }
-        
+
         .focus-badge {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.73rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
         }
-        
-        .focus-primary {
-            background: #e8f5e8;
-            color: #2e7d32;
-            border: 1px solid #4caf50;
+
+        .badge-primary {
+            background: #e0f8f4;
+            color: #007a63;
+            border: 1px solid #7dd4c8;
         }
-        
-        .focus-secondary {
+
+        .badge-secondary {
             background: #e3f2fd;
             color: #1565c0;
-            border: 1px solid #2196f3;
+            border: 1px solid #90caf9;
         }
-        
-        .type-badge {
-            background: #fff3e0;
+
+        .badge-type {
+            background: #fff8e1;
             color: #e65100;
-            border: 1px solid #ff9800;
+            border: 1px solid #ffcc80;
         }
-        
-        .no-results {
+
+        /* ── STATES ── */
+        .loading-state {
             text-align: center;
-            padding: 60px 20px;
-            color: #666;
+            padding: 64px 20px;
+            color: #7a95a8;
         }
-        
-        .no-results h3 {
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-        }
-        
+
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #2196f3;
+            width: 36px;
+            height: 36px;
+            border: 3px solid #b2dde8;
+            border-top-color: #00A887;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            animation: spin 0.9s linear infinite;
+            margin: 0 auto 16px;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
-        
-        .status-bar {
-            background: #f8f9fa;
-            padding: 15px 30px;
-            border-top: 1px solid #dee2e6;
-            font-size: 0.9rem;
-            color: #6c757d;
+
+        .loading-state p { font-size: 0.9rem; }
+
+        .empty-state {
+            text-align: center;
+            padding: 64px 20px;
+            color: #7a95a8;
         }
-        
-        .error-message {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            color: #856404;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
+
+        .empty-state svg {
+            margin-bottom: 16px;
+            opacity: 0.4;
         }
-        
-        .success-message {
-            background: #d4edda;
-            border: 1px solid #28a745;
-            color: #155724;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
+
+        .empty-state h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4a6a4e;
+            margin-bottom: 6px;
         }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .research-fields-grid {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                gap: 8px;
-            }
-            
-            .field-card {
-                padding: 10px 12px;
-                min-height: 45px;
-            }
-            
-            .field-name {
-                font-size: 0.8rem;
-            }
-            
-            .results-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .project-details {
-                flex-direction: column;
-                gap: 8px;
-                align-items: flex-start;
-            }
-            
-            .detail-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 2px;
-            }
+
+        .empty-state p {
+            font-size: 0.86rem;
+        }
+
+        .error-state {
+            margin: 20px 28px;
+            background: #fff3f3;
+            border: 1.5px solid #ffcdd2;
+            border-radius: 10px;
+            padding: 20px;
+            color: #c62828;
+        }
+
+        .error-state h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
+        .error-state p { font-size: 0.84rem; }
+
+        .success-toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: #00A887;
+            color: #fff;
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-size: 0.86rem;
+            font-weight: 500;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+            z-index: 999;
+            animation: slideUp 0.25s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to   { transform: translateY(0);   opacity: 1; }
+        }
+
+        /* ── FOOTER ── */
+        .site-footer {
+            margin-top: 8px;
+            background: #fff;
+            border-top: 1px solid #dde8ec;
+            padding: 16px 32px;
+        }
+
+        .footer-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.78rem;
+            color: #7a95a8;
+        }
+
+        .footer-status {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: #00A887;
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: middle;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 헤더 -->
-        <div class="header">
-            <h1>KEI Project Search by Research Focus</h1>
-            <p>Select one or more research focuses to explore related projects.</p>
-        </div>
 
-        <!-- 메인 컨텐츠 -->
-        <div class="main-content">
-            <!-- 연구분야 선택 섹션 -->
-            <div class="research-fields-section">
-                <h2 class="section-title">Select Research Focus</h2>
-                
-                <div class="research-fields-grid" id="researchFieldsGrid">
-                    <!-- 연구분야 카드들이 여기에 동적으로 생성됩니다 -->
-                </div>
-                
-                <!-- 선택 요약 -->
-                <div class="selection-summary hide" id="selectionSummary">
-                    <div style="font-weight: 600; margin-bottom: 8px;">
-                        Selected Research Focus (<span id="selectedCount">0</span>)
-                    </div>
-                    <div class="selected-fields" id="selectedFields">
-                        <!-- 선택된 분야 태그들이 여기에 표시됩니다 -->
-                    </div>
-                </div>
+    <!-- ── SITE HEADER ── -->
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo-area">
+                <img src="data/CI_logos/KEI_English_1.jpg" alt="KEI Korea Environment Institute" />
+            </div>
+            <div class="header-nav-title">Research Project Explorer</div>
+        </div>
+    </header>
+
+    <!-- ── HERO SECTION ── -->
+    <section class="hero-section">
+        <h1>Explore KEI's Research Portfolio</h1>
+        <p>Browse research projects by focus area and discover how KEI is advancing environmental policy in Korea and beyond.</p>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-number" id="totalProjectsCount">—</span>
+                <span class="stat-label">Research Projects</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number" id="totalFieldsCount">—</span>
+                <span class="stat-label">Research Areas</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── MAIN CONTENT ── -->
+    <div class="main-container">
+
+        <!-- Research Focus Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Research Focus Areas</h2>
+                <button class="btn-text" onclick="clearSelection()">Clear Selection</button>
             </div>
 
-            <!-- 결과 섹션 -->
-            <div class="results-section">
-                <div class="results-header">
-                    <div class="results-info">
-                        Search Results: <span id="resultsCount">Loading Data ...</span>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="btn btn-secondary" onclick="clearSelection()">
-                            Reset Selection
-                        </button>
-                        <button class="btn btn-secondary" onclick="selectAllProjects()" id="selectAllBtn">
-                            Select All
-                        </button>
-                        <button class="btn btn-secondary" onclick="clearProjectSelection()" id="clearProjectBtn">
-                            Deselect All
-                        </button>
-                        <button class="btn btn-warning" onclick="downloadExcel()" id="downloadExcelBtn" disabled>
-                            Download Excel (<span id="selectedProjectCount">0</span> Projects)
-                        </button>
-                        <button class="btn btn-success" onclick="downloadPDF()" id="downloadBtn" disabled>
-                            Download PDF (<span id="selectedProjectCountPDF">0</span> Projects)
-                        </button>
-                        <button class="btn btn-primary" onclick="refreshData()">
-                            Refresh
-                        </button>
-                    </div>
-                </div>
+            <div class="research-fields-grid" id="researchFieldsGrid">
+                <!-- dynamically populated -->
+            </div>
 
-                <!-- 프로젝트 목록 -->
-                <div id="projectsList">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <div>Loading Data ...</div>
-                    </div>
+            <div class="selection-summary hide" id="selectionSummary">
+                <div class="selection-summary-label">
+                    Filtering by <span id="selectedCount">0</span> area(s)
                 </div>
+                <div class="selected-fields-row" id="selectedFields"></div>
             </div>
         </div>
 
-        <!-- 상태바 -->
-        <div class="status-bar">
-            Server Status: <span id="serverStatus">Checking ...</span> | 
-            Data File: <span id="dataFile">Loading ...</span> | 
-            Last Update: <span id="lastUpdate">-</span>
+        <!-- Results Panel -->
+        <div class="panel">
+            <div class="results-panel-header">
+                <div class="results-info">
+                    Showing <span id="resultsCount">—</span>
+                </div>
+                <div class="results-controls">
+                    <select class="sort-select" id="sortSelect" onchange="applySortAndRender()">
+                        <option value="default">Default Order</option>
+                        <option value="title_asc">Title (A → Z)</option>
+                        <option value="start_desc">Newest First</option>
+                        <option value="start_asc">Oldest First</option>
+                    </select>
+                    <button class="btn btn-outline" onclick="selectAllProjects()" id="selectAllBtn">Select All</button>
+                    <button class="btn btn-outline" onclick="clearProjectSelection()" id="clearProjectBtn">Deselect All</button>
+                    <button class="btn btn-excel" onclick="downloadExcel()" id="downloadExcelBtn" disabled>
+                        ↓ Excel (<span id="selectedProjectCount">0</span>)
+                    </button>
+                    <button class="btn btn-pdf" onclick="downloadPDF()" id="downloadBtn" disabled>
+                        ↓ PDF (<span id="selectedProjectCountPDF">0</span>)
+                    </button>
+                    <button class="btn btn-refresh" onclick="refreshData()" title="Refresh data">↺</button>
+                </div>
+            </div>
+
+            <div id="projectsList">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading project data…</p>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- ── FOOTER ── -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div>© Korea Environment Institute. All rights reserved.</div>
+            <div class="footer-status">
+                <span><span class="status-dot"></span>Status: <span id="serverStatus">Checking…</span></span>
+                <span>Data: <span id="dataFile">—</span></span>
+                <span>Updated: <span id="lastUpdate">—</span></span>
+            </div>
+        </div>
+    </footer>
+
     <script>
-        // 전역 변수
+        // ── Global State ──
         let allProjects = [];
         let filteredProjects = [];
         let selectedFields = [];
@@ -531,130 +723,70 @@
         let fieldProjectCount = {};
         let selectedProjects = new Set();
         let fieldToOriginalMap = new Map();
+        let currentSort = 'default';
 
-        // 페이지 로드 시 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('페이지 로드 완료, 데이터 로딩 시작...');
+        document.addEventListener('DOMContentLoaded', function () {
             updateServerStatus();
             loadData();
         });
 
-        // 필드명 정규화 함수 (안전한 버전)
+        // ── Normalize field names ──
         function normalizeFieldName(fieldName) {
-            if (!fieldName || typeof fieldName !== 'string') {
-                return '';
-            }
-            
+            if (!fieldName || typeof fieldName !== 'string') return '';
             try {
-                // 기본적인 정리: 앞뒤 공백 제거, 소문자 변환
                 let normalized = fieldName.trim().toLowerCase();
-                
-                // Title Case로 변환 (더 안전한 방식)
-                normalized = normalized.replace(/\w\S*/g, (txt) => {
-                    return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
-                });
-                
+                normalized = normalized.replace(/\w\S*/g, txt =>
+                    txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
+                );
                 return normalized;
-            } catch (error) {
-                console.warn('Field name normalization error:', error, 'for field:', fieldName);
-                // 오류 시 기본 처리
+            } catch (e) {
                 return String(fieldName).trim().toLowerCase();
             }
         }
 
-        // 서버 상태 확인
-        async function updateServerStatus() {
-            // Static mode - no server check
+        // ── Server status ──
+        function updateServerStatus() {
             document.getElementById('serverStatus').textContent = 'Static Mode';
-            document.getElementById('serverStatus').style.color = '#4caf50';
+            document.getElementById('serverStatus').style.color = '#00A887';
         }
 
-        // 오류 메시지 표시
-        function showError(message) {
-            const container = document.getElementById('projectsList');
-            container.innerHTML = `
-                <div class="error-message">
-                    <h3>오류 발생</h3>
-                    <p>${message}</p>
-                    <button class="btn btn-primary" onclick="loadData()" style="margin-top: 10px;">
-                        다시 시도
-                    </button>
-                </div>
-            `;
-        }
-
-        // 성공 메시지 표시
-        function showSuccess(message) {
-            const container = document.getElementById('projectsList');
-            const existingSuccess = container.querySelector('.success-message');
-            if (existingSuccess) {
-                existingSuccess.remove();
-            }
-            
-            const successDiv = document.createElement('div');
-            successDiv.className = 'success-message';
-            successDiv.innerHTML = `<p>${message}</p>`;
-            container.insertBefore(successDiv, container.firstChild);
-            
-            setTimeout(() => {
-                if (successDiv.parentNode) {
-                    successDiv.remove();
-                }
-            }, 3000);
-        }
-
-        // 데이터 로드
+        // ── Load Data ──
         async function loadData() {
             try {
-                console.log('Loading Excel data from ./data/projects.xlsx (Static Mode)...');
-                
                 document.getElementById('projectsList').innerHTML = `
-                    <div class="loading">
+                    <div class="loading-state">
                         <div class="spinner"></div>
-                        <div>프로젝트 데이터를 불러오고 있습니다...</div>
-                    </div>
-                `;
-                
+                        <p>Loading project data…</p>
+                    </div>`;
                 document.getElementById('dataFile').textContent = 'projects.xlsx';
-                
-                // Fetch Excel file
+
                 const response = await fetch('data/projects.xlsx');
-                if (!response.ok) {
-                    throw new Error(`파일을 불러올 수 없습니다 (${response.status})`);
-                }
-                
+                if (!response.ok) throw new Error(`Cannot load file (${response.status})`);
+
                 const fileLastModified = response.headers.get('Last-Modified');
                 const arrayBuffer = await response.arrayBuffer();
                 const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-                
-                // 'List' sheet
+
                 const listSheet = workbook.Sheets['List'];
-                if (!listSheet) {
-                    throw new Error("'List' 시트를 찾을 수 없습니다.");
-                }
-                
+                if (!listSheet) throw new Error("Sheet 'List' not found.");
+
                 const jsonData = XLSX.utils.sheet_to_json(listSheet, { header: 1 });
-                
-                // Find header row (Primary Focus / Secondary Focus)
+
                 let headerRowIndex = -1;
                 for (let i = 0; i < Math.min(10, jsonData.length); i++) {
                     const row = jsonData[i];
-                    if (row && Array.isArray(row) && 
-                        row.some(cell => String(cell).includes('Primary Focus')) && 
+                    if (row && Array.isArray(row) &&
+                        row.some(cell => String(cell).includes('Primary Focus')) &&
                         row.some(cell => String(cell).includes('Secondary Focus'))) {
                         headerRowIndex = i;
                         break;
                     }
                 }
-                
-                if (headerRowIndex === -1) {
-                    throw new Error("헤더 행을 찾을 수 없습니다.");
-                }
-                
+                if (headerRowIndex === -1) throw new Error("Header row not found in file.");
+
                 const headers = jsonData[headerRowIndex];
                 const dataRows = jsonData.slice(headerRowIndex + 1);
-                
-                // Map headers
+
                 const colMap = {};
                 headers.forEach((header, index) => {
                     if (!header) return;
@@ -668,786 +800,403 @@
                     else if (h.includes('start')) colMap.projectStart = index;
                     else if (h.includes('end')) colMap.projectEnd = index;
                 });
-                
-                // Parse projects
+
                 allProjects = dataRows.map((row, index) => {
-                     // Handle empty rows
-                     if (!row || row.length === 0) return null;
-                     
-                     // Get ID
-                     let id = row[colMap.id];
-                     if (!id) id = index + 1;
-                     
-                     // Get Type
-                     let type = colMap.type !== undefined ? row[colMap.type] : '';
-                     
-                     // Get Title
-                     const title = colMap.title !== undefined ? row[colMap.title] : '';
-                     if (!title) return null;
-                     
-                     return {
-                         id: id,
-                         type: type,
-                         title: title,
-                         pi: colMap.pi !== undefined ? row[colMap.pi] : '',
-                         primaryFocus: colMap.primaryFocus !== undefined ? row[colMap.primaryFocus] : '',
-                         secondaryFocus: colMap.secondaryFocus !== undefined ? row[colMap.secondaryFocus] : '',
-                         projectStart: colMap.projectStart !== undefined ? formatDate(row[colMap.projectStart]) : '',
-                         projectEnd: colMap.projectEnd !== undefined ? formatDate(row[colMap.projectEnd]) : ''
-                     };
+                    if (!row || row.length === 0) return null;
+                    let id = row[colMap.id];
+                    if (!id) id = index + 1;
+                    const title = colMap.title !== undefined ? row[colMap.title] : '';
+                    if (!title) return null;
+                    return {
+                        id,
+                        type: colMap.type !== undefined ? row[colMap.type] : '',
+                        title,
+                        pi: colMap.pi !== undefined ? row[colMap.pi] : '',
+                        primaryFocus: colMap.primaryFocus !== undefined ? row[colMap.primaryFocus] : '',
+                        secondaryFocus: colMap.secondaryFocus !== undefined ? row[colMap.secondaryFocus] : '',
+                        projectStart: colMap.projectStart !== undefined ? formatDate(row[colMap.projectStart]) : '',
+                        projectEnd: colMap.projectEnd !== undefined ? formatDate(row[colMap.projectEnd]) : ''
+                    };
                 }).filter(p => p !== null);
-                
-                console.log('Loaded projects:', allProjects.length);
-                
-                // Recalculate research fields
+
+                // Build field maps
                 const fieldsMap = new Map();
                 fieldProjectCount = {};
                 fieldToOriginalMap.clear();
-                
+
                 allProjects.forEach(project => {
                     [project.primaryFocus, project.secondaryFocus].forEach(field => {
                         if (field) {
-                            const normalizedField = normalizeFieldName(field);
-                            fieldProjectCount[normalizedField] = (fieldProjectCount[normalizedField] || 0) + 1;
-                            if (!fieldsMap.has(normalizedField) || fieldsMap.get(normalizedField).count < fieldProjectCount[normalizedField]) {
-                                fieldsMap.set(normalizedField, { original: field, count: fieldProjectCount[normalizedField] });
+                            const nf = normalizeFieldName(field);
+                            fieldProjectCount[nf] = (fieldProjectCount[nf] || 0) + 1;
+                            if (!fieldsMap.has(nf)) {
+                                fieldsMap.set(nf, { original: field });
                             }
                         }
                     });
                 });
-                
-                fieldsMap.forEach((value, key) => {
-                    fieldToOriginalMap.set(key, value.original);
-                });
-                
+
+                fieldsMap.forEach((value, key) => fieldToOriginalMap.set(key, value.original));
                 researchFields = Array.from(fieldsMap.keys()).sort();
                 filteredProjects = [...allProjects];
-                
+
+                // Update hero stats
+                document.getElementById('totalProjectsCount').textContent = allProjects.length;
+                document.getElementById('totalFieldsCount').textContent = researchFields.length;
+
                 createResearchFieldsGrid();
-                updateProjectsList();
+                renderProjects();
                 updateLastUpdateTime(fileLastModified);
-                
-                document.getElementById('serverStatus').textContent = 'Ready (Static)';
-                document.getElementById('serverStatus').style.color = '#4caf50';
+
+                document.getElementById('serverStatus').textContent = 'Ready';
+                document.getElementById('serverStatus').style.color = '#00A887';
 
             } catch (error) {
                 console.error('Data load error:', error);
-                showError('데이터 로드 중 오류가 발생했습니다: ' + error.message);
+                document.getElementById('projectsList').innerHTML = `
+                    <div class="error-state">
+                        <h3>Failed to load data</h3>
+                        <p>${error.message}</p>
+                        <button class="btn btn-outline" onclick="loadData()" style="margin-top:12px;">Try Again</button>
+                    </div>`;
                 document.getElementById('serverStatus').textContent = 'Error';
-                document.getElementById('serverStatus').style.color = '#f44336';
+                document.getElementById('serverStatus').style.color = '#e53935';
             }
         }
 
-        // 날짜 포맷팅
+        // ── Date formatting ──
         function formatDate(dateValue) {
             if (!dateValue) return '';
-            
             try {
                 let date;
                 if (typeof dateValue === 'number') {
-                    // Excel 날짜 시리얼 번호
                     date = new Date((dateValue - 25569) * 86400 * 1000);
                 } else if (dateValue instanceof Date) {
                     date = dateValue;
                 } else {
                     date = new Date(dateValue);
                 }
-                
-                if (isNaN(date.getTime())) {
-                    return dateValue.toString();
-                }
-                
+                if (isNaN(date.getTime())) return dateValue.toString();
                 return date.toLocaleDateString('en-US');
-            } catch (error) {
+            } catch (e) {
                 return dateValue.toString();
             }
         }
 
-        // 연구분야 그리드 생성
+        // ── Build field grid ──
         function createResearchFieldsGrid() {
             const grid = document.getElementById('researchFieldsGrid');
             grid.innerHTML = '';
-            
             researchFields.forEach(field => {
                 const card = document.createElement('div');
                 card.className = 'field-card';
                 card.onclick = () => toggleField(field);
-                
-                // 원본 필드명을 표시
                 const displayName = fieldToOriginalMap.get(field) || field;
+                const count = fieldProjectCount[field] || 0;
                 card.innerHTML = `
                     <div class="field-name">${displayName}</div>
-                `;
-                
+                    <div class="field-count-badge">${count} project${count !== 1 ? 's' : ''}</div>`;
                 grid.appendChild(card);
             });
         }
 
-        // 연구분야 토글
+        // ── Toggle field ──
         function toggleField(field) {
-            const index = selectedFields.indexOf(field);
-            if (index > -1) {
-                selectedFields.splice(index, 1);
-            } else {
-                selectedFields.push(field);
-            }
-            
+            const idx = selectedFields.indexOf(field);
+            if (idx > -1) selectedFields.splice(idx, 1);
+            else selectedFields.push(field);
             updateFieldSelection();
             filterProjects();
-            updateProjectsList();
+            renderProjects();
         }
 
-        // 필드 선택 UI 업데이트
+        // ── Update field UI ──
         function updateFieldSelection() {
-            // 카드 스타일 업데이트
-            const cards = document.querySelectorAll('.field-card');
-            cards.forEach(card => {
+            document.querySelectorAll('.field-card').forEach(card => {
                 const displayName = card.querySelector('.field-name').textContent;
-                // 표시명을 정규화된 필드명으로 역매핑
-                const normalizedName = [...fieldToOriginalMap.entries()].find(([key, value]) => value === displayName)?.[0];
-                
-                if (selectedFields.includes(normalizedName)) {
-                    card.classList.add('selected');
-                } else {
-                    card.classList.remove('selected');
-                }
+                const nf = [...fieldToOriginalMap.entries()].find(([, v]) => v === displayName)?.[0];
+                card.classList.toggle('selected', selectedFields.includes(nf));
             });
-            
-            // 선택 요약 업데이트
+
             const summary = document.getElementById('selectionSummary');
             const count = document.getElementById('selectedCount');
             const container = document.getElementById('selectedFields');
-            
+
             if (selectedFields.length > 0) {
-                summary.classList.remove('hide');
-                summary.classList.add('show');
+                summary.classList.replace('hide', 'show');
                 count.textContent = selectedFields.length;
-                
                 container.innerHTML = selectedFields.map(field => {
                     const displayName = fieldToOriginalMap.get(field) || field;
-                    return `
-                        <div class="selected-tag">
-                            ${displayName}
-                            <span class="remove-tag" onclick="toggleField('${field}')">&times;</span>
-                        </div>
-                    `;
+                    return `<div class="selected-tag">${displayName}<span class="remove-tag" onclick="toggleField('${field}')">✕</span></div>`;
                 }).join('');
             } else {
-                summary.classList.remove('show');
-                summary.classList.add('hide');
+                summary.classList.replace('show', 'hide');
             }
         }
 
-        // 프로젝트 필터링 (대소문자 무시)
+        // ── Filter projects ──
         function filterProjects() {
             if (selectedFields.length === 0) {
                 filteredProjects = [...allProjects];
             } else {
-                filteredProjects = allProjects.filter(project => 
-                    selectedFields.some(field => 
-                        normalizeFieldName(project.primaryFocus) === field || 
-                        normalizeFieldName(project.secondaryFocus) === field
+                filteredProjects = allProjects.filter(p =>
+                    selectedFields.some(f =>
+                        normalizeFieldName(p.primaryFocus) === f ||
+                        normalizeFieldName(p.secondaryFocus) === f
                     )
                 );
             }
         }
 
-        // 프로젝트 목록 업데이트
-        function updateProjectsList() {
+        // ── Sort ──
+        function applySortAndRender() {
+            currentSort = document.getElementById('sortSelect').value;
+            renderProjects();
+        }
+
+        function getSortedProjects() {
+            const arr = [...filteredProjects];
+            if (currentSort === 'title_asc') {
+                arr.sort((a, b) => a.title.localeCompare(b.title));
+            } else if (currentSort === 'start_desc') {
+                arr.sort((a, b) => new Date(b.projectStart) - new Date(a.projectStart));
+            } else if (currentSort === 'start_asc') {
+                arr.sort((a, b) => new Date(a.projectStart) - new Date(b.projectStart));
+            }
+            return arr;
+        }
+
+        // ── Render projects ──
+        function renderProjects() {
             const container = document.getElementById('projectsList');
             const resultsCount = document.getElementById('resultsCount');
             const downloadBtn = document.getElementById('downloadBtn');
             const downloadExcelBtn = document.getElementById('downloadExcelBtn');
-            
-            resultsCount.textContent = `${filteredProjects.length} Projects`;
-            
+
             if (filteredProjects.length === 0) {
+                resultsCount.textContent = '0 projects';
                 container.innerHTML = `
-                    <div class="no-results">
-                        <h3>검색 결과가 없습니다</h3>
-                        <p>다른 연구분야를 선택해보세요.</p>
-                    </div>
-                `;
+                    <div class="empty-state">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="20" stroke="#00A887" stroke-width="2"/>
+                            <path d="M16 24h16M24 16v16" stroke="#00A887" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <h3>No projects found</h3>
+                        <p>Try selecting a different research focus area.</p>
+                    </div>`;
                 downloadBtn.disabled = true;
                 downloadExcelBtn.disabled = true;
-            } else {
-                container.innerHTML = filteredProjects.map(project => createProjectCard(project)).join('');
-                updateDownloadButtons();
+                return;
             }
+
+            const sorted = getSortedProjects();
+            resultsCount.textContent = `${filteredProjects.length} project${filteredProjects.length !== 1 ? 's' : ''}`;
+
+            container.innerHTML = `<div class="projects-list">${sorted.map(p => createProjectCard(p)).join('')}</div>`;
+            updateDownloadButtons();
         }
 
-        // 프로젝트 카드 생성
+        // ── Project card HTML ──
         function createProjectCard(project) {
             const isSelected = selectedProjects.has(project.id);
             return `
                 <div class="project-card ${isSelected ? 'selected' : ''}">
-                    <input type="checkbox" class="project-checkbox" 
-                           ${isSelected ? 'checked' : ''} 
-                           onchange="toggleProjectSelection(${project.id})" />
+                    <input type="checkbox" class="project-checkbox"
+                           ${isSelected ? 'checked' : ''}
+                           onchange="toggleProjectSelection(${JSON.stringify(project.id)})" />
                     <div class="project-title">${project.title}</div>
-                    <div class="project-details">
-                        <div class="detail-item">
-                            <div class="detail-label">PI:</div>
-                            <div class="detail-value">${project.pi}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Period:</div>
-                            <div class="detail-value">${project.projectStart} ~ ${project.projectEnd}</div>
-                        </div>
-                        ${project.type ? `
-                        <div class="detail-item">
-                            <div class="detail-label">Type:</div>
-                            <div class="detail-value">${project.type}</div>
-                        </div>
-                        ` : ''}
+                    <div class="project-meta">
+                        ${project.pi ? `<div class="meta-item"><span class="meta-label">PI</span><span class="meta-value">${project.pi}</span></div>` : ''}
+                        ${(project.projectStart || project.projectEnd) ? `<div class="meta-item"><span class="meta-label">Period</span><span class="meta-value">${project.projectStart}${project.projectStart && project.projectEnd ? ' – ' : ''}${project.projectEnd}</span></div>` : ''}
+                        ${project.type ? `<div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">${project.type}</span></div>` : ''}
                     </div>
-                    <div class="project-focuses">
-                        ${project.primaryFocus ? `
-                            <span class="focus-badge focus-primary">
-                                ${project.primaryFocus}
-                            </span>
-                        ` : ''}
-                        ${project.secondaryFocus ? `
-                            <span class="focus-badge focus-secondary">
-                                ${project.secondaryFocus}
-                            </span>
-                        ` : ''}
+                    <div class="project-badges">
+                        ${project.primaryFocus ? `<span class="focus-badge badge-primary">${project.primaryFocus}</span>` : ''}
+                        ${project.secondaryFocus ? `<span class="focus-badge badge-secondary">${project.secondaryFocus}</span>` : ''}
                     </div>
-                </div>
-            `;
+                </div>`;
         }
 
-        // 프로젝트 선택 토글
+        // ── Selection helpers ──
         function toggleProjectSelection(projectId) {
-            if (selectedProjects.has(projectId)) {
-                selectedProjects.delete(projectId);
-            } else {
-                selectedProjects.add(projectId);
-            }
+            if (selectedProjects.has(projectId)) selectedProjects.delete(projectId);
+            else selectedProjects.add(projectId);
             updateProjectCardStyles();
             updateDownloadButtons();
         }
 
-        // 모든 프로젝트 선택
         function selectAllProjects() {
-            filteredProjects.forEach(project => {
-                selectedProjects.add(project.id);
-            });
+            filteredProjects.forEach(p => selectedProjects.add(p.id));
             updateProjectCardStyles();
             updateDownloadButtons();
         }
 
-        // 프로젝트 선택 해제
         function clearProjectSelection() {
             selectedProjects.clear();
             updateProjectCardStyles();
             updateDownloadButtons();
         }
 
-        // 프로젝트 카드 스타일 업데이트
         function updateProjectCardStyles() {
-            const checkboxes = document.querySelectorAll('.project-checkbox');
-            checkboxes.forEach(checkbox => {
-                const projectId = parseInt(checkbox.getAttribute('onchange').match(/\d+/)[0]);
-                const card = checkbox.closest('.project-card');
-                
-                if (selectedProjects.has(projectId)) {
-                    checkbox.checked = true;
-                    card.classList.add('selected');
-                } else {
-                    checkbox.checked = false;
-                    card.classList.remove('selected');
-                }
+            document.querySelectorAll('.project-checkbox').forEach(cb => {
+                const id = JSON.parse(cb.getAttribute('onchange').match(/toggleProjectSelection\((.*?)\)/)[1]);
+                const card = cb.closest('.project-card');
+                cb.checked = selectedProjects.has(id);
+                card.classList.toggle('selected', selectedProjects.has(id));
             });
         }
 
-        // 다운로드 버튼 업데이트
         function updateDownloadButtons() {
-            const selectedCount = selectedProjects.size;
-            const downloadBtn = document.getElementById('downloadBtn');
-            const downloadExcelBtn = document.getElementById('downloadExcelBtn');
-            const selectedCountSpan = document.getElementById('selectedProjectCount');
-            const selectedCountPDFSpan = document.getElementById('selectedProjectCountPDF');
-            
-            selectedCountSpan.textContent = selectedCount;
-            selectedCountPDFSpan.textContent = selectedCount;
-            
-            if (selectedCount > 0) {
-                downloadBtn.disabled = false;
-                downloadExcelBtn.disabled = false;
-            } else {
-                downloadBtn.disabled = true;
-                downloadExcelBtn.disabled = true;
-            }
+            const n = selectedProjects.size;
+            document.getElementById('selectedProjectCount').textContent = n;
+            document.getElementById('selectedProjectCountPDF').textContent = n;
+            document.getElementById('downloadBtn').disabled = n === 0;
+            document.getElementById('downloadExcelBtn').disabled = n === 0;
         }
 
-        // 선택 초기화 (연구분야)
         function clearSelection() {
             selectedFields = [];
             selectedProjects.clear();
             updateFieldSelection();
             filterProjects();
-            updateProjectsList();
+            renderProjects();
         }
 
-        // 데이터 새로고침
         function refreshData() {
             document.getElementById('projectsList').innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <div>데이터를 새로고침하고 있습니다...</div>
-                </div>
-            `;
+                <div class="loading-state"><div class="spinner"></div><p>Refreshing…</p></div>`;
             loadData();
         }
 
-        // Excel 다운로드 기능
+        // ── Toast notification ──
+        function showToast(message) {
+            const existing = document.querySelector('.success-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.className = 'success-toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ── Excel Export ──
         function downloadExcel() {
-            if (selectedProjects.size === 0) {
-                alert('다운로드할 프로젝트를 선택해주세요.');
-                return;
-            }
-
+            if (selectedProjects.size === 0) return;
             try {
-                // 선택된 프로젝트들 필터링
-                const selectedProjectsList = allProjects.filter(project => selectedProjects.has(project.id));
-                
-                // 워크북 생성
+                const list = allProjects.filter(p => selectedProjects.has(p.id));
                 const wb = XLSX.utils.book_new();
-                
-                // 데이터 준비
-                const wsData = [
-                    ['No.', 'Title', 'PI', 'Primary Focus', 'Secondary Focus', 'Type', 'Project Start', 'Project End']
-                ];
-                
-                selectedProjectsList.forEach((project, index) => {
-                    wsData.push([
-                        index + 1,
-                        project.title,
-                        project.pi,
-                        project.primaryFocus,
-                        project.secondaryFocus,
-                        project.type,
-                        project.projectStart,
-                        project.projectEnd
-                    ]);
-                });
-                
-                // 워크시트 생성
+                const wsData = [['No.', 'Title', 'PI', 'Primary Focus', 'Secondary Focus', 'Type', 'Project Start', 'Project End']];
+                list.forEach((p, i) => wsData.push([i + 1, p.title, p.pi, p.primaryFocus, p.secondaryFocus, p.type, p.projectStart, p.projectEnd]));
                 const ws = XLSX.utils.aoa_to_sheet(wsData);
-                
-                // 컬럼 너비 설정
-                const colWidths = [
-                    { wch: 5 },   // No.
-                    { wch: 60 },  // Title
-                    { wch: 20 },  // PI
-                    { wch: 25 },  // Primary Focus
-                    { wch: 25 },  // Secondary Focus
-                    { wch: 15 },  // Type
-                    { wch: 15 },  // Project Start
-                    { wch: 15 }   // Project End
-                ];
-                ws['!cols'] = colWidths;
-                
-                // 헤더 스타일 설정
-                const headerStyle = {
-                    font: { bold: true },
-                    fill: { fgColor: { rgb: "CCCCCC" } },
-                    alignment: { horizontal: "center" }
-                };
-                
-                // 헤더에 스타일 적용
-                for (let col = 0; col < 8; col++) {
-                    const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
-                    if (!ws[cellRef]) ws[cellRef] = { t: 's', v: '' };
-                    ws[cellRef].s = headerStyle;
-                }
-                
-                // 워크시트를 워크북에 추가
+                ws['!cols'] = [{ wch: 5 }, { wch: 60 }, { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 15 }];
                 XLSX.utils.book_append_sheet(wb, ws, 'KEI Projects');
-                
-                // 메타데이터 시트 추가
-                const excelSelectedFieldNames = selectedFields.map(field => fieldToOriginalMap.get(field) || field);
+
+                const fieldNames = selectedFields.map(f => fieldToOriginalMap.get(f) || f);
                 const metaData = [
-                    ['KEI Research Projects Export'],
-                    [''],
+                    ['KEI Research Projects Export'], [''],
                     ['Export Date:', new Date().toLocaleDateString('en-US')],
-                    ['Total Projects:', selectedProjectsList.length],
-                    ['Selected Fields:', excelSelectedFieldNames.length > 0 ? excelSelectedFieldNames.join(', ') : 'All Fields'],
-                    [''],
-                    ['Column Descriptions:'],
-                    ['No.', 'Sequential number'],
-                    ['Title', 'Project title'],
-                    ['PI', 'Principal Investigator'],
-                    ['Primary Focus', 'Primary research focus area'],
-                    ['Secondary Focus', 'Secondary research focus area'],
-                    ['Type', 'Research type/category'],
-                    ['Project Start', 'Project start date'],
-                    ['Project End', 'Project end date']
+                    ['Total Projects:', list.length],
+                    ['Selected Focus:', fieldNames.length > 0 ? fieldNames.join(', ') : 'All Fields']
                 ];
-                
                 const metaWs = XLSX.utils.aoa_to_sheet(metaData);
-                metaWs['!cols'] = [{ wch: 20 }, { wch: 40 }];
+                metaWs['!cols'] = [{ wch: 18 }, { wch: 50 }];
                 XLSX.utils.book_append_sheet(wb, metaWs, 'Export Info');
-                
-                // 파일명 생성
-                const fileName = excelSelectedFieldNames.length > 0 
-                    ? `KEI_${excelSelectedFieldNames.join('_').replace(/[^a-zA-Z0-9가-힣]/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`
-                    : `KEI_Selected_Projects_${new Date().toISOString().split('T')[0]}.xlsx`;
-                
-                // 파일 저장
-                XLSX.writeFile(wb, fileName);
-                
-                // 성공 메시지
-                showSuccess(`Excel 다운로드가 완료되었습니다! (${selectedProjectsList.length} Projects)`);
-                
-            } catch (error) {
-                console.error('Excel 생성 오류:', error);
-                alert('Excel 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+
+                const fname = `KEI_Projects_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fname);
+                showToast(`Excel downloaded — ${list.length} projects`);
+            } catch (e) {
+                console.error(e);
+                alert('Excel export failed. Please try again.');
             }
         }
 
-        // 개선된 PDF 다운로드 함수
+        // ── PDF Export ──
         async function downloadPDF() {
-            if (selectedProjects.size === 0) {
-                alert('다운로드할 프로젝트를 선택해주세요.');
-                return;
-            }
-
+            if (selectedProjects.size === 0) return;
             try {
-                // 로딩 메시지 표시
-                const originalContent = document.getElementById('projectsList').innerHTML;
+                const originalHTML = document.getElementById('projectsList').innerHTML;
                 document.getElementById('projectsList').innerHTML = `
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <div>PDF를 생성하고 있습니다... 잠시만 기다려주세요.</div>
-                    </div>
-                `;
+                    <div class="loading-state"><div class="spinner"></div><p>Generating PDF…</p></div>`;
 
-                // html2canvas 라이브러리 확인
-                if (typeof html2canvas === 'undefined') {
-                    throw new Error('html2canvas 라이브러리를 로드할 수 없습니다.');
-                }
+                if (typeof html2canvas === 'undefined') throw new Error('html2canvas not loaded.');
+                let jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+                if (!jsPDF) throw new Error('jsPDF not loaded.');
 
-                // jsPDF 라이브러리 확인 및 인스턴스 생성
-                let jsPDF;
-                if (window.jspdf && window.jspdf.jsPDF) {
-                    jsPDF = window.jspdf.jsPDF;
-                } else if (window.jsPDF) {
-                    jsPDF = window.jsPDF;
-                } else {
-                    throw new Error('jsPDF 라이브러리를 찾을 수 없습니다.');
-                }
-
-                // 선택된 프로젝트들 필터링
-                const selectedProjectsList = allProjects.filter(project => selectedProjects.has(project.id));
-                
-                // PDF 생성
-                console.log('PDF 문서 생성 중...');
+                const list = allProjects.filter(p => selectedProjects.has(p.id));
                 const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                const margin = 15; // 15mm 여백
-                const contentWidth = pdfWidth - (margin * 2);
-                const cardMargin = 5; // 카드 간 여백 5mm
-                
-                // 헤더 생성 및 추가
-                const headerContainer = document.createElement('div');
-                headerContainer.style.position = 'absolute';
-                headerContainer.style.left = '-9999px';
-                headerContainer.style.top = '0';
-                headerContainer.style.width = `${contentWidth}mm`;
-                headerContainer.style.backgroundColor = 'white';
-                headerContainer.style.fontFamily = '"Segoe UI", "Malgun Gothic", sans-serif';
-                headerContainer.style.padding = '10px';
+                const pdfW = pdf.internal.pageSize.getWidth();
+                const pdfH = pdf.internal.pageSize.getHeight();
+                const margin = 15;
+                const cw = pdfW - margin * 2;
 
-                const headerHtml = `
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <h1 style="color: #2c3e50; font-size: 24px; margin-bottom: 10px; margin-top: 0;">KEI Project Search Results by Research Focus</h1>
-                        ${selectedFields.length > 0 ? `
-                            <p style="color: #666; font-size: 14px; margin: 5px 0;">
-                                Selected Focus(es): ${selectedFields.map(field => fieldToOriginalMap.get(field) || field).join(', ')}
-                            </p>
-                        ` : ''}
-                        <p style="color: #666; font-size: 14px; margin: 5px 0;">
-                            Created on: ${new Date().toLocaleDateString('en-US')} | 
-                            Total Projects: ${selectedProjectsList.length}
-                        </p>
-                    </div>
-                `;
+                // Header
+                const hEl = document.createElement('div');
+                hEl.style.cssText = 'position:absolute;left:-9999px;top:0;width:540px;background:#fff;font-family:Inter,sans-serif;padding:10px';
+                hEl.innerHTML = `
+                    <div style="text-align:center;margin-bottom:16px;padding:12px 0;border-bottom:2px solid #00A887">
+                        <div style="color:#00A887;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">Korea Environment Institute</div>
+                        <div style="color:#2d3a40;font-size:20px;font-weight:700;margin-bottom:6px">Research Project Export</div>
+                        ${selectedFields.length > 0 ? `<div style="color:#555;font-size:12px">Focus: ${selectedFields.map(f => fieldToOriginalMap.get(f) || f).join(', ')}</div>` : ''}
+                        <div style="color:#888;font-size:11px;margin-top:4px">${new Date().toLocaleDateString('en-US')} · ${list.length} Projects</div>
+                    </div>`;
+                document.body.appendChild(hEl);
+                const hCanvas = await html2canvas(hEl, { scale: 2, useCORS: true, backgroundColor: '#fff' });
+                const hH = (hCanvas.height * cw) / hCanvas.width;
+                pdf.addImage(hCanvas.toDataURL('image/png'), 'PNG', margin, margin, cw, hH);
+                document.body.removeChild(hEl);
+                let y = margin + hH + 5;
 
-                headerContainer.innerHTML = headerHtml;
-                document.body.appendChild(headerContainer);
-
-                // 헤더를 이미지로 변환하여 PDF에 추가
-                const headerCanvas = await html2canvas(headerContainer, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    width: headerContainer.offsetWidth,
-                    height: headerContainer.offsetHeight
-                });
-
-                const headerImgData = headerCanvas.toDataURL('image/png');
-                const headerHeight = (headerCanvas.height * contentWidth) / headerCanvas.width;
-                
-                pdf.addImage(headerImgData, 'PNG', margin, margin, contentWidth, headerHeight);
-                document.body.removeChild(headerContainer);
-
-                let currentY = margin + headerHeight + 10; // 헤더 다음 시작 위치
-
-                // 각 프로젝트 카드를 개별적으로 처리
-                for (let i = 0; i < selectedProjectsList.length; i++) {
-                    const project = selectedProjectsList[i];
-                    
-                    try {
-                        // 개별 카드용 임시 컨테이너 생성
-                        const cardContainer = document.createElement('div');
-                        cardContainer.style.position = 'absolute';
-                        cardContainer.style.left = '-9999px';
-                        cardContainer.style.top = '0';
-                        cardContainer.style.width = `${contentWidth}mm`;
-                        cardContainer.style.backgroundColor = 'white';
-                        cardContainer.style.fontFamily = '"Segoe UI", "Malgun Gothic", sans-serif';
-                        cardContainer.style.padding = '0';
-
-                        // 카드 HTML 생성
-                        const cardHtml = `
-                            <div style="
-                                background: #fff;
-                                border: 1px solid #e0e0e0;
-                                border-radius: 10px;
-                                padding: 15px;
-                                margin: 0;
-                                border-left: 4px solid #2196f3;
-                                page-break-inside: avoid;
-                                break-inside: avoid;
-                                box-sizing: border-box;
-                            ">
-                                <div style="font-size: 16px; font-weight: 600; color: #2c3e50; margin-bottom: 12px; line-height: 1.4; word-wrap: break-word;">
-                                    ${project.title}
-                                </div>
-                                <div style="display: flex; flex-wrap: wrap; gap: 15px; color: #555; font-size: 14px; margin-bottom: 12px;">
-                                    <div style="display: flex; align-items: center; gap: 5px;">
-                                        <span style="font-weight: 600; color: #666; font-size: 12px; text-transform: uppercase;">PI:</span>
-                                        <span style="color: #2c3e50; font-weight: 500;">${project.pi}</span>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 5px;">
-                                        <span style="font-weight: 600; color: #666; font-size: 12px; text-transform: uppercase;">PERIOD:</span>
-                                        <span style="color: #2c3e50; font-weight: 500;">${project.projectStart} ~ ${project.projectEnd}</span>
-                                    </div>
-                                    ${project.type ? `
-                                        <div style="display: flex; align-items: center; gap: 5px;">
-                                            <span style="font-weight: 600; color: #666; font-size: 12px; text-transform: uppercase;">TYPE:</span>
-                                            <span style="color: #2c3e50; font-weight: 500;">${project.type}</span>
-                                        </div>
-                                    ` : ''}
-                                </div>
-                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                    ${project.primaryFocus ? `
-                                        <span style="
-                                            padding: 4px 10px;
-                                            border-radius: 12px;
-                                            font-size: 12px;
-                                            font-weight: 500;
-                                            background: #e8f5e8;
-                                            color: #2e7d32;
-                                            border: 1px solid #4caf50;
-                                            word-wrap: break-word;
-                                        ">
-                                            ${project.primaryFocus}
-                                        </span>
-                                    ` : ''}
-                                    ${project.secondaryFocus ? `
-                                        <span style="
-                                            padding: 4px 10px;
-                                            border-radius: 12px;
-                                            font-size: 12px;
-                                            font-weight: 500;
-                                            background: #e3f2fd;
-                                            color: #1565c0;
-                                            border: 1px solid #2196f3;
-                                            word-wrap: break-word;
-                                        ">
-                                            ${project.secondaryFocus}
-                                        </span>
-                                    ` : ''}
-                                </div>
+                for (let i = 0; i < list.length; i++) {
+                    const p = list[i];
+                    const cEl = document.createElement('div');
+                    cEl.style.cssText = 'position:absolute;left:-9999px;top:0;width:540px;background:#fff;font-family:Inter,sans-serif';
+                    cEl.innerHTML = `
+                        <div style="border:1px solid #dde8ec;border-left:4px solid #00A887;border-radius:8px;padding:12px 14px;margin:0;background:#fff">
+                            <div style="font-size:13px;font-weight:600;color:#2d3a40;margin-bottom:8px;line-height:1.4">${p.title}</div>
+                            <div style="display:flex;gap:20px;font-size:11px;color:#555;margin-bottom:8px">
+                                ${p.pi ? `<span><b style="color:#7a95a8;text-transform:uppercase;font-size:10px">PI</b>&nbsp;${p.pi}</span>` : ''}
+                                ${p.projectStart ? `<span><b style="color:#7a95a8;text-transform:uppercase;font-size:10px">Period</b>&nbsp;${p.projectStart} – ${p.projectEnd}</span>` : ''}
+                                ${p.type ? `<span><b style="color:#7a95a8;text-transform:uppercase;font-size:10px">Type</b>&nbsp;${p.type}</span>` : ''}
                             </div>
-                        `;
-
-                        cardContainer.innerHTML = cardHtml;
-                        document.body.appendChild(cardContainer);
-
-                        // 예상 카드 높이 계산 (기본 높이 + 제목 길이에 따른 추가 높이)
-                        const baseCardHeight = 25; // 기본 카드 높이 (mm)
-                        const titleLength = project.title.length;
-                        const additionalHeight = Math.max(0, Math.ceil((titleLength - 50) / 30) * 5); // 제목이 길면 추가 높이
-                        const estimatedCardHeight = baseCardHeight + additionalHeight;
-
-                        // 페이지 넘김 필요 여부 확인 (여유 공간 10mm 추가)
-                        if (currentY + estimatedCardHeight + 10 > pdfHeight - margin) {
-                            pdf.addPage();
-                            currentY = margin;
-                        }
-
-                        // html2canvas로 카드 이미지 생성
-                        const cardCanvas = await html2canvas(cardContainer, {
-                            scale: 2,
-                            useCORS: true,
-                            backgroundColor: '#ffffff',
-                            width: cardContainer.offsetWidth,
-                            height: cardContainer.offsetHeight
-                        });
-
-                        // 임시 컨테이너 제거
-                        document.body.removeChild(cardContainer);
-
-                        // 카드 이미지를 PDF에 추가
-                        const cardImgData = cardCanvas.toDataURL('image/png');
-                        const actualCardHeight = (cardCanvas.height * contentWidth) / cardCanvas.width;
-                        
-                        // 실제 높이로 다시 페이지 넘김 체크
-                        if (currentY + actualCardHeight > pdfHeight - margin) {
-                            pdf.addPage();
-                            currentY = margin;
-                        }
-
-                        pdf.addImage(cardImgData, 'PNG', margin, currentY, contentWidth, actualCardHeight);
-                        currentY += actualCardHeight + cardMargin; // 다음 카드 위치
-
-                        // 진행상황 로그
-                        if (i % 10 === 0 || i === selectedProjectsList.length - 1) {
-                            console.log(`PDF 진행상황: ${i + 1}/${selectedProjectsList.length} 카드 처리 완료`);
-                        }
-
-                    } catch (cardError) {
-                        console.warn(`프로젝트 카드 처리 중 오류 (${i + 1}/${selectedProjectsList.length}):`, cardError);
-                        
-                        // 폴백: 텍스트로 카드 추가
-                        const fallbackHeight = 30; // 텍스트 카드 높이
-                        
-                        if (currentY + fallbackHeight > pdfHeight - margin) {
-                            pdf.addPage();
-                            currentY = margin;
-                        }
-                        
-                        // 텍스트로 프로젝트 정보 추가
-                        pdf.setFontSize(14);
-                        pdf.setFont(undefined, 'bold');
-                        
-                        // 제목 (여러 줄 처리)
-                        const titleLines = pdf.splitTextToSize(project.title, contentWidth - 20);
-                        pdf.text(titleLines, margin + 10, currentY + 8);
-                        currentY += titleLines.length * 5 + 5;
-                        
-                        pdf.setFontSize(10);
-                        pdf.setFont(undefined, 'normal');
-                        
-                        // 기본 정보
-                        pdf.text(`PI: ${project.pi}`, margin + 10, currentY);
-                        currentY += 5;
-                        pdf.text(`Period: ${project.projectStart} ~ ${project.projectEnd}`, margin + 10, currentY);
-                        currentY += 5;
-                        
-                        if (project.type) {
-                            pdf.text(`Type: ${project.type}`, margin + 10, currentY);
-                            currentY += 5;
-                        }
-                        
-                        if (project.primaryFocus) {
-                            pdf.text(`Primary Focus: ${project.primaryFocus}`, margin + 10, currentY);
-                            currentY += 5;
-                        }
-                        
-                        if (project.secondaryFocus) {
-                            pdf.text(`Secondary Focus: ${project.secondaryFocus}`, margin + 10, currentY);
-                            currentY += 5;
-                        }
-                        
-                        currentY += cardMargin; // 카드 간 여백
-                    }
+                            <div style="display:flex;gap:6px;flex-wrap:wrap">
+                                ${p.primaryFocus ? `<span style="background:#e0f8f4;color:#007a63;border:1px solid #7dd4c8;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600">${p.primaryFocus}</span>` : ''}
+                                ${p.secondaryFocus ? `<span style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600">${p.secondaryFocus}</span>` : ''}
+                            </div>
+                        </div>`;
+                    document.body.appendChild(cEl);
+                    const cCanvas = await html2canvas(cEl, { scale: 2, useCORS: true, backgroundColor: '#fff' });
+                    document.body.removeChild(cEl);
+                    const cH = (cCanvas.height * cw) / cCanvas.width;
+                    if (y + cH > pdfH - margin) { pdf.addPage(); y = margin; }
+                    pdf.addImage(cCanvas.toDataURL('image/png'), 'PNG', margin, y, cw, cH);
+                    y += cH + 4;
                 }
 
-                // 파일명 생성
-                const selectedFieldNames = selectedFields.map(field => fieldToOriginalMap.get(field) || field);
-                const timestamp = new Date().toISOString().split('T')[0];
-                const fileName = selectedFieldNames.length > 0 
-                    ? `KEI_${selectedFieldNames.join('_').replace(/[^a-zA-Z0-9가-힣]/g, '_')}_${timestamp}.pdf`
-                    : `KEI_Selected_Projects_${timestamp}.pdf`;
-
-                // PDF 저장
-                pdf.save(fileName);
-
-                // 원래 내용 복원
-                document.getElementById('projectsList').innerHTML = originalContent;
-
-                // 성공 메시지
-                showSuccess(`PDF 다운로드가 완료되었습니다! (${selectedProjectsList.length} Projects)`);
-
-            } catch (error) {
-                console.error('PDF 생성 오류:', error);
-                
-                // 원래 내용 복원
-                updateProjectsList();
-                
-                let errorMessage = 'PDF 생성 중 오류가 발생했습니다.';
-                if (error.message.includes('html2canvas')) {
-                    errorMessage += ' HTML 캡처 라이브러리 문제입니다.';
-                } else if (error.message.includes('jsPDF')) {
-                    errorMessage += ' PDF 라이브러리 문제입니다.';
-                }
-                
-                alert(errorMessage + ' 브라우저를 새로고침 후 다시 시도해주세요.');
+                pdf.save(`KEI_Projects_${new Date().toISOString().split('T')[0]}.pdf`);
+                document.getElementById('projectsList').innerHTML = originalHTML;
+                showToast(`PDF downloaded — ${list.length} projects`);
+            } catch (e) {
+                console.error(e);
+                renderProjects();
+                alert('PDF export failed. Please try again.');
             }
         }
 
-        // 마지막 업데이트 시간 설정
-        function updateLastUpdateTime(timestamp) {
-            const date = timestamp ? new Date(timestamp) : new Date();
-            document.getElementById('lastUpdate').textContent = date.toLocaleString('en-US');
+        // ── Last update time ──
+        function updateLastUpdateTime(ts) {
+            const d = ts ? new Date(ts) : new Date();
+            document.getElementById('lastUpdate').textContent = d.toLocaleDateString('en-US');
         }
 
-        // 키보드 단축키
-        document.addEventListener('keydown', function(event) {
-            // Ctrl+A: 전체 선택
-            if (event.ctrlKey && event.key === 'a' && event.target.tagName !== 'INPUT') {
-                event.preventDefault();
-                if (researchFields.length > 0) {
-                    selectedFields = [...researchFields];
-                    updateFieldSelection();
-                    filterProjects();
-                    updateProjectsList();
-                }
-            }
-            
-            // Ctrl+D: 선택 해제
-            if (event.ctrlKey && event.key === 'd' && event.target.tagName !== 'INPUT') {
-                event.preventDefault();
-                clearSelection();
-            }
-            
-            // Ctrl+S: PDF 다운로드
-            if (event.ctrlKey && event.key === 's') {
-                event.preventDefault();
-                if (filteredProjects.length > 0) {
-                    downloadPDF();
-                }
-            }
-            
-            // Ctrl+E: Excel 다운로드
-            if (event.ctrlKey && event.key === 'e') {
-                event.preventDefault();
-                if (filteredProjects.length > 0) {
-                    downloadExcel();
-                }
-            }
-            
-            // F5: 새로고침
-            if (event.key === 'F5') {
-                event.preventDefault();
-                refreshData();
-            }
+        // ── Keyboard shortcuts ──
+        document.addEventListener('keydown', e => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+            if (e.ctrlKey && e.key === 'a') { e.preventDefault(); selectedFields = [...researchFields]; updateFieldSelection(); filterProjects(); renderProjects(); }
+            if (e.ctrlKey && e.key === 'd') { e.preventDefault(); clearSelection(); }
+            if (e.ctrlKey && e.key === 's') { e.preventDefault(); if (selectedProjects.size > 0) downloadPDF(); }
+            if (e.ctrlKey && e.key === 'e') { e.preventDefault(); if (selectedProjects.size > 0) downloadExcel(); }
+            if (e.key === 'F5') { e.preventDefault(); refreshData(); }
         });
     </script>
 </body>
