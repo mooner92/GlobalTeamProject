@@ -1,1203 +1,232 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>KEI Research Project Explorer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles/main.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: #f4f7f9;
-            color: #2d2d2d;
-            min-height: 100vh;
-        }
-
-        /* ── SITE HEADER ── */
-        .site-header {
-            background: #fff;
-            border-bottom: 1px solid #e0e8ec;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-inner {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 32px;
-            height: 68px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo-area img {
-            height: 36px;
-            width: auto;
-            display: block;
-        }
-
-        .header-nav-title {
-            font-size: 0.88rem;
-            font-weight: 500;
-            color: #6D6E71;
-            letter-spacing: 0.02em;
-        }
-
-        /* ── HERO SECTION ── */
-        .hero-section {
-            background: linear-gradient(135deg, #007a63 0%, #29ABE2 100%);
-            padding: 52px 32px 48px;
-            text-align: center;
-            color: #fff;
-        }
-
-        .hero-section h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 10px;
-        }
-
-        .hero-section p {
-            font-size: 1rem;
-            color: rgba(255,255,255,0.8);
-            max-width: 520px;
-            margin: 0 auto 36px;
-            line-height: 1.6;
-        }
-
-        .hero-stats {
-            display: inline-flex;
-            align-items: center;
-            gap: 0;
-            background: rgba(255,255,255,0.12);
-            border: 1px solid rgba(255,255,255,0.22);
-            border-radius: 12px;
-            padding: 16px 40px;
-            backdrop-filter: blur(4px);
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0 28px;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #fff;
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.72);
-            margin-top: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-        }
-
-        .stat-divider {
-            width: 1px;
-            height: 44px;
-            background: rgba(255,255,255,0.25);
-        }
-
-        /* ── MAIN CONTAINER ── */
-        .main-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        /* ── PANEL ── */
-        .panel {
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
-            overflow: hidden;
-        }
-
-        .panel-header {
-            padding: 22px 28px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .panel-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #00A887;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .panel-title::before {
-            content: '';
-            display: inline-block;
-            width: 4px;
-            height: 18px;
-            background: #00A887;
-            border-radius: 2px;
-        }
-
-        .btn-text {
-            font-size: 0.82rem;
-            color: #5a7a8a;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px 0;
-            font-family: inherit;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .btn-text:hover {
-            color: #00A887;
-        }
-
-        /* ── RESEARCH FIELD GRID ── */
-        .research-fields-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-            gap: 10px;
-            padding: 18px 28px 24px;
-        }
-
-        .field-card {
-            border: 1.5px solid #b2dde8;
-            border-radius: 10px;
-            padding: 14px 16px 12px;
-            cursor: pointer;
-            transition: all 0.22s ease;
-            background: #fafdff;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 6px;
-            position: relative;
-        }
-
-        .field-card:hover {
-            border-color: #29ABE2;
-            background: #f0f8fd;
-            box-shadow: 0 2px 10px rgba(41,171,226,0.14);
-            transform: translateY(-1px);
-        }
-
-        .field-card.selected {
-            background: #00A887;
-            border-color: #00A887;
-            color: #fff;
-            box-shadow: 0 4px 14px rgba(0,168,135,0.30);
-            transform: translateY(-2px);
-        }
-
-        .field-name {
-            font-size: 0.84rem;
-            font-weight: 500;
-            line-height: 1.35;
-            color: #2d2d2d;
-        }
-
-        .field-card.selected .field-name {
-            color: #fff;
-        }
-
-        .field-count-badge {
-            font-size: 0.72rem;
-            font-weight: 600;
-            background: #e0f4fb;
-            color: #0077a8;
-            padding: 2px 8px;
-            border-radius: 20px;
-        }
-
-        .field-card.selected .field-count-badge {
-            background: rgba(255,255,255,0.22);
-            color: rgba(255,255,255,0.92);
-        }
-
-        /* ── SELECTION SUMMARY ── */
-        .selection-summary {
-            margin: 0 28px 20px;
-            background: #f0faff;
-            border-left: 4px solid #29ABE2;
-            border-radius: 0 8px 8px 0;
-            padding: 14px 16px;
-        }
-
-        .selection-summary.hide { display: none; }
-        .selection-summary.show { display: block; }
-
-        .selection-summary-label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #007a63;
-            margin-bottom: 10px;
-        }
-
-        .selected-fields-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .selected-tag {
-            background: #00A887;
-            color: #fff;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.78rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .remove-tag {
-            cursor: pointer;
-            width: 15px;
-            height: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            font-size: 0.7rem;
-            font-weight: 700;
-            line-height: 1;
-            transition: background 0.15s;
-        }
-
-        .remove-tag:hover { background: rgba(255,255,255,0.35); }
-
-        /* ── RESULTS SECTION ── */
-        .results-panel-header {
-            padding: 20px 28px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 14px;
-            border-bottom: 1px solid #eef2ef;
-        }
-
-        .results-info {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #2d2d2d;
-        }
-
-        .results-info span {
-            color: #00A887;
-        }
-
-        .results-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .sort-select {
-            font-family: inherit;
-            font-size: 0.82rem;
-            font-weight: 500;
-            color: #2d2d2d;
-            background: #f4f7f9;
-            border: 1.5px solid #b2dde8;
-            border-radius: 7px;
-            padding: 7px 12px;
-            cursor: pointer;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .sort-select:focus { border-color: #00A887; }
-
-        /* ── BUTTONS ── */
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 7px;
-            cursor: pointer;
-            font-weight: 600;
-            font-family: inherit;
-            font-size: 0.82rem;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-        }
-
-        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-        .btn-outline {
-            background: #fff;
-            color: #5a7a8a;
-            border: 1.5px solid #b2dde8;
-        }
-
-        .btn-outline:hover:not(:disabled) {
-            background: #f0faff;
-            border-color: #00A887;
-            color: #00A887;
-        }
-
-        .btn-excel {
-            background: #e0f8f4;
-            color: #007a63;
-            border: 1.5px solid #7dd4c8;
-        }
-
-        .btn-excel:hover:not(:disabled) {
-            background: #b2dde8;
-            border-color: #00A887;
-        }
-
-        .btn-pdf {
-            background: #00A887;
-            color: #fff;
-            border: 1.5px solid #00A887;
-        }
-
-        .btn-pdf:hover:not(:disabled) {
-            background: #007a63;
-        }
-
-        .btn-refresh {
-            background: #fff;
-            color: #5a7a8a;
-            border: 1.5px solid #b2dde8;
-            padding: 8px 10px;
-        }
-
-        .btn-refresh:hover { background: #f0faff; }
-
-        /* ── PROJECTS LIST ── */
-        .projects-list {
-            padding: 20px 28px 28px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .project-card {
-            background: #fff;
-            border: 1.5px solid #dde8ec;
-            border-radius: 10px;
-            padding: 18px 20px 16px 20px;
-            border-left: 4px solid #00A887;
-            position: relative;
-            transition: all 0.2s ease;
-        }
-
-        .project-card:hover {
-            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-            transform: translateY(-1px);
-            border-color: #7dd4c8;
-        }
-
-        .project-card.selected {
-            background: #f0faff;
-            border-color: #00A887;
-            border-left-color: #00A887;
-        }
-
-        .project-checkbox {
-            position: absolute;
-            top: 18px;
-            right: 18px;
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-            accent-color: #00A887;
-        }
-
-        .project-title {
-            font-size: 0.97rem;
-            font-weight: 600;
-            color: #2d2d2d;
-            line-height: 1.45;
-            margin-bottom: 10px;
-            padding-right: 28px;
-        }
-
-        .project-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 12px;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.82rem;
-        }
-
-        .meta-label {
-            font-weight: 600;
-            color: #7a95a8;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            letter-spacing: 0.06em;
-        }
-
-        .meta-value {
-            color: #1a3a4a;
-            font-weight: 500;
-        }
-
-        .project-badges {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .focus-badge {
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.73rem;
-            font-weight: 600;
-            letter-spacing: 0.01em;
-        }
-
-        .badge-primary {
-            background: #e0f8f4;
-            color: #007a63;
-            border: 1px solid #7dd4c8;
-        }
-
-        .badge-secondary {
-            background: #e3f2fd;
-            color: #1565c0;
-            border: 1px solid #90caf9;
-        }
-
-        .badge-type {
-            background: #fff8e1;
-            color: #e65100;
-            border: 1px solid #ffcc80;
-        }
-
-        /* ── STATES ── */
-        .loading-state {
-            text-align: center;
-            padding: 64px 20px;
-            color: #7a95a8;
-        }
-
-        .spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid #b2dde8;
-            border-top-color: #00A887;
-            border-radius: 50%;
-            animation: spin 0.9s linear infinite;
-            margin: 0 auto 16px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-state p { font-size: 0.9rem; }
-
-        .empty-state {
-            text-align: center;
-            padding: 64px 20px;
-            color: #7a95a8;
-        }
-
-        .empty-state svg {
-            margin-bottom: 16px;
-            opacity: 0.4;
-        }
-
-        .empty-state h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #4a6a4e;
-            margin-bottom: 6px;
-        }
-
-        .empty-state p {
-            font-size: 0.86rem;
-        }
-
-        .error-state {
-            margin: 20px 28px;
-            background: #fff3f3;
-            border: 1.5px solid #ffcdd2;
-            border-radius: 10px;
-            padding: 20px;
-            color: #c62828;
-        }
-
-        .error-state h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
-        .error-state p { font-size: 0.84rem; }
-
-        .success-toast {
-            position: fixed;
-            bottom: 28px;
-            right: 28px;
-            background: #00A887;
-            color: #fff;
-            padding: 14px 22px;
-            border-radius: 10px;
-            font-size: 0.86rem;
-            font-weight: 500;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.18);
-            z-index: 999;
-            animation: slideUp 0.25s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to   { transform: translateY(0);   opacity: 1; }
-        }
-
-        /* ── FOOTER ── */
-        .site-footer {
-            margin-top: 8px;
-            background: #fff;
-            border-top: 1px solid #dde8ec;
-            padding: 16px 32px;
-        }
-
-        .footer-inner {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.78rem;
-            color: #7a95a8;
-        }
-
-        .footer-status {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-
-        .status-dot {
-            display: inline-block;
-            width: 7px;
-            height: 7px;
-            background: #00A887;
-            border-radius: 50%;
-            margin-right: 5px;
-            vertical-align: middle;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- ── SITE HEADER ── -->
+  </head>
+  <body>
     <header class="site-header">
-        <div class="header-inner">
-            <div class="logo-area">
-                <img src="data/CI_logos/KEI_English_1.jpg" alt="KEI Korea Environment Institute" />
-            </div>
-            <div class="header-nav-title">Research Project Explorer</div>
+      <div class="header-inner">
+        <div class="logo-area">
+          <img
+            src="data/CI_logos/KEI_English_1.jpg"
+            alt="KEI Korea Environment Institute"
+          />
         </div>
+        <div class="header-nav-title">Research Project Explorer</div>
+      </div>
     </header>
 
-    <!-- ── HERO SECTION ── -->
     <section class="hero-section">
-        <h1>Explore KEI's Research Portfolio</h1>
-        <p>Browse research projects by focus area and discover how KEI is advancing environmental policy in Korea and beyond.</p>
-        <div class="hero-stats">
-            <div class="stat-item">
-                <span class="stat-number" id="totalProjectsCount">—</span>
-                <span class="stat-label">Research Projects</span>
-            </div>
-            <div class="stat-divider"></div>
-            <div class="stat-item">
-                <span class="stat-number" id="totalFieldsCount">—</span>
-                <span class="stat-label">Research Areas</span>
-            </div>
+      <h1>Explore KEI's Research Portfolio</h1>
+      <p>
+        Browse research projects by focus area and discover how KEI is advancing
+        environmental policy in Korea and beyond.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number" id="totalProjectsCount">—</span>
+          <span class="stat-label">Research Projects</span>
         </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number" id="totalFieldsCount">—</span>
+          <span class="stat-label">Research Areas</span>
+        </div>
+      </div>
     </section>
 
-    <!-- ── MAIN CONTENT ── -->
     <div class="main-container">
-
-        <!-- Research Focus Panel -->
-        <div class="panel">
-            <div class="panel-header">
-                <h2 class="panel-title">Research Focus Areas</h2>
-                <button class="btn-text" onclick="clearSelection()">Clear Selection</button>
-            </div>
-
-            <div class="research-fields-grid" id="researchFieldsGrid">
-                <!-- dynamically populated -->
-            </div>
-
-            <div class="selection-summary hide" id="selectionSummary">
-                <div class="selection-summary-label">
-                    Filtering by <span id="selectedCount">0</span> area(s)
-                </div>
-                <div class="selected-fields-row" id="selectedFields"></div>
-            </div>
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Research Focus Areas</h2>
+          <button type="button" class="btn-text" onclick="clearSelection()">
+            Clear Selection
+          </button>
         </div>
 
-        <!-- Results Panel -->
-        <div class="panel">
-            <div class="results-panel-header">
-                <div class="results-info">
-                    Showing <span id="resultsCount">—</span>
-                </div>
-                <div class="results-controls">
-                    <select class="sort-select" id="sortSelect" onchange="applySortAndRender()">
-                        <option value="default">Default Order</option>
-                        <option value="title_asc">Title (A → Z)</option>
-                        <option value="start_desc">Newest First</option>
-                        <option value="start_asc">Oldest First</option>
-                    </select>
-                    <button class="btn btn-outline" onclick="selectAllProjects()" id="selectAllBtn">Select All</button>
-                    <button class="btn btn-outline" onclick="clearProjectSelection()" id="clearProjectBtn">Deselect All</button>
-                    <button class="btn btn-excel" onclick="downloadExcel()" id="downloadExcelBtn" disabled>
-                        ↓ Excel (<span id="selectedProjectCount">0</span>)
-                    </button>
-                    <button class="btn btn-pdf" onclick="downloadPDF()" id="downloadBtn" disabled>
-                        ↓ PDF (<span id="selectedProjectCountPDF">0</span>)
-                    </button>
-                    <button class="btn btn-refresh" onclick="refreshData()" title="Refresh data">↺</button>
-                </div>
-            </div>
+        <div
+          class="research-fields-grid"
+          id="researchFieldsGrid"
+          role="group"
+          aria-label="Research focus areas"
+        ></div>
 
-            <div id="projectsList">
-                <div class="loading-state">
-                    <div class="spinner"></div>
-                    <p>Loading project data…</p>
-                </div>
-            </div>
+        <div class="selection-summary hide" id="selectionSummary">
+          <div class="selection-summary-label">
+            Filtering by <span id="selectedCount">0</span> area(s)
+          </div>
+          <div class="selected-fields-row" id="selectedFields"></div>
         </div>
+      </div>
+
+      <div class="panel">
+        <div class="results-panel-header">
+          <div
+            class="results-info"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            Showing <span id="resultsCount">—</span>
+          </div>
+          <div class="results-controls">
+            <label class="visually-hidden" for="projectSearchInput"
+              >Search by project title or PI</label
+            >
+            <input
+              type="search"
+              class="filter-input search-filter-input"
+              id="projectSearchInput"
+              placeholder="Search title or PI"
+              autocomplete="off"
+              aria-label="Search by project title or PI"
+            />
+            <div
+              class="date-filter-controls"
+              role="group"
+              aria-label="Project date range filter"
+            >
+              <label class="visually-hidden" for="projectDateStart"
+                >Project date start</label
+              >
+              <input
+                type="date"
+                class="filter-input date-filter-input"
+                id="projectDateStart"
+                aria-label="Project date start"
+              />
+              <span class="date-filter-separator" aria-hidden="true">to</span>
+              <label class="visually-hidden" for="projectDateEnd"
+                >Project date end</label
+              >
+              <input
+                type="date"
+                class="filter-input date-filter-input"
+                id="projectDateEnd"
+                aria-label="Project date end"
+              />
+            </div>
+            <label class="visually-hidden" for="sortSelect"
+              >Sort projects</label
+            >
+            <select
+              class="sort-select"
+              id="sortSelect"
+              onchange="applySortAndRender()"
+              aria-label="Sort projects"
+            >
+              <option value="default">Default Order</option>
+              <option value="title_asc">Title (A → Z)</option>
+              <option value="start_desc">Newest First</option>
+              <option value="start_asc">Oldest First</option>
+            </select>
+            <button
+              type="button"
+              class="btn btn-outline"
+              onclick="selectAllProjects()"
+              id="selectAllBtn"
+            >
+              Select All
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline"
+              onclick="clearProjectSelection()"
+              id="clearProjectBtn"
+            >
+              Deselect All
+            </button>
+            <button
+              type="button"
+              class="btn btn-excel"
+              onclick="downloadExcel()"
+              id="downloadExcelBtn"
+              disabled
+            >
+              ↓ Excel (<span id="selectedProjectCount">0</span>)
+            </button>
+            <button
+              type="button"
+              class="btn btn-pdf"
+              onclick="downloadPDF()"
+              id="downloadBtn"
+              disabled
+            >
+              ↓ PDF (<span id="selectedProjectCountPDF">0</span>)
+            </button>
+            <button
+              type="button"
+              class="btn btn-refresh"
+              onclick="refreshData()"
+              title="Refresh data"
+              aria-label="Refresh project data"
+            >
+              ↺
+            </button>
+            <span
+              class="export-status"
+              id="pdfExportStatus"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            ></span>
+            <span
+              class="filter-feedback"
+              id="dateRangeFeedback"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            ></span>
+          </div>
+        </div>
+
+        <div id="projectsList">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading project data…</p>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- ── FOOTER ── -->
     <footer class="site-footer">
-        <div class="footer-inner">
-            <div>© Korea Environment Institute. All rights reserved.</div>
-            <div class="footer-status">
-                <span><span class="status-dot"></span>Status: <span id="serverStatus">Checking…</span></span>
-                <span>Data: <span id="dataFile">—</span></span>
-                <span>Updated: <span id="lastUpdate">—</span></span>
-            </div>
+      <div class="footer-inner">
+        <div>&copy; Korea Environment Institute. All rights reserved.</div>
+        <div
+          class="footer-status"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <span
+            ><span class="status-dot"></span>Status:
+            <span id="serverStatus">Checking…</span></span
+          >
+          <span>Data: <span id="dataFile">—</span></span>
+          <span>Updated: <span id="lastUpdate">—</span></span>
         </div>
+      </div>
     </footer>
 
-    <script>
-        // ── Global State ──
-        let allProjects = [];
-        let filteredProjects = [];
-        let selectedFields = [];
-        let researchFields = [];
-        let fieldProjectCount = {};
-        let selectedProjects = new Set();
-        let fieldToOriginalMap = new Map();
-        let currentSort = 'default';
+    <div
+      id="interactionStatus"
+      class="visually-hidden"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
 
-        document.addEventListener('DOMContentLoaded', function () {
-            updateServerStatus();
-            loadData();
-        });
-
-        // ── Normalize field names ──
-        function normalizeFieldName(fieldName) {
-            if (!fieldName || typeof fieldName !== 'string') return '';
-            try {
-                let normalized = fieldName.trim().toLowerCase();
-                normalized = normalized.replace(/\w\S*/g, txt =>
-                    txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
-                );
-                return normalized;
-            } catch (e) {
-                return String(fieldName).trim().toLowerCase();
-            }
-        }
-
-        // ── Server status ──
-        function updateServerStatus() {
-            document.getElementById('serverStatus').textContent = 'Static Mode';
-            document.getElementById('serverStatus').style.color = '#00A887';
-        }
-
-        // ── Load Data ──
-        async function loadData() {
-            try {
-                document.getElementById('projectsList').innerHTML = `
-                    <div class="loading-state">
-                        <div class="spinner"></div>
-                        <p>Loading project data…</p>
-                    </div>`;
-                document.getElementById('dataFile').textContent = 'projects.xlsx';
-
-                const response = await fetch('data/projects.xlsx');
-                if (!response.ok) throw new Error(`Cannot load file (${response.status})`);
-
-                const fileLastModified = response.headers.get('Last-Modified');
-                const arrayBuffer = await response.arrayBuffer();
-                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-
-                const listSheet = workbook.Sheets['List'];
-                if (!listSheet) throw new Error("Sheet 'List' not found.");
-
-                const jsonData = XLSX.utils.sheet_to_json(listSheet, { header: 1 });
-
-                let headerRowIndex = -1;
-                for (let i = 0; i < Math.min(10, jsonData.length); i++) {
-                    const row = jsonData[i];
-                    if (row && Array.isArray(row) &&
-                        row.some(cell => String(cell).includes('Primary Focus')) &&
-                        row.some(cell => String(cell).includes('Secondary Focus'))) {
-                        headerRowIndex = i;
-                        break;
-                    }
-                }
-                if (headerRowIndex === -1) throw new Error("Header row not found in file.");
-
-                const headers = jsonData[headerRowIndex];
-                const dataRows = jsonData.slice(headerRowIndex + 1);
-
-                const colMap = {};
-                headers.forEach((header, index) => {
-                    if (!header) return;
-                    const h = String(header).toLowerCase();
-                    if (h === 'no.' || h === 'no') colMap.id = index;
-                    else if (h.includes('type')) colMap.type = index;
-                    else if (h.includes('title')) colMap.title = index;
-                    else if (h === 'pi' || h.includes('principal investigator')) colMap.pi = index;
-                    else if (h.includes('primary focus')) colMap.primaryFocus = index;
-                    else if (h.includes('secondary focus')) colMap.secondaryFocus = index;
-                    else if (h.includes('start')) colMap.projectStart = index;
-                    else if (h.includes('end')) colMap.projectEnd = index;
-                });
-
-                allProjects = dataRows.map((row, index) => {
-                    if (!row || row.length === 0) return null;
-                    let id = row[colMap.id];
-                    if (!id) id = index + 1;
-                    const title = colMap.title !== undefined ? row[colMap.title] : '';
-                    if (!title) return null;
-                    return {
-                        id,
-                        type: colMap.type !== undefined ? row[colMap.type] : '',
-                        title,
-                        pi: colMap.pi !== undefined ? row[colMap.pi] : '',
-                        primaryFocus: colMap.primaryFocus !== undefined ? row[colMap.primaryFocus] : '',
-                        secondaryFocus: colMap.secondaryFocus !== undefined ? row[colMap.secondaryFocus] : '',
-                        projectStart: colMap.projectStart !== undefined ? formatDate(row[colMap.projectStart]) : '',
-                        projectEnd: colMap.projectEnd !== undefined ? formatDate(row[colMap.projectEnd]) : ''
-                    };
-                }).filter(p => p !== null);
-
-                // Build field maps
-                const fieldsMap = new Map();
-                fieldProjectCount = {};
-                fieldToOriginalMap.clear();
-
-                allProjects.forEach(project => {
-                    [project.primaryFocus, project.secondaryFocus].forEach(field => {
-                        if (field) {
-                            const nf = normalizeFieldName(field);
-                            fieldProjectCount[nf] = (fieldProjectCount[nf] || 0) + 1;
-                            if (!fieldsMap.has(nf)) {
-                                fieldsMap.set(nf, { original: field });
-                            }
-                        }
-                    });
-                });
-
-                fieldsMap.forEach((value, key) => fieldToOriginalMap.set(key, value.original));
-                researchFields = Array.from(fieldsMap.keys()).sort();
-                filteredProjects = [...allProjects];
-
-                // Update hero stats
-                document.getElementById('totalProjectsCount').textContent = allProjects.length;
-                document.getElementById('totalFieldsCount').textContent = researchFields.length;
-
-                createResearchFieldsGrid();
-                renderProjects();
-                updateLastUpdateTime(fileLastModified);
-
-                document.getElementById('serverStatus').textContent = 'Ready';
-                document.getElementById('serverStatus').style.color = '#00A887';
-
-            } catch (error) {
-                console.error('Data load error:', error);
-                document.getElementById('projectsList').innerHTML = `
-                    <div class="error-state">
-                        <h3>Failed to load data</h3>
-                        <p>${error.message}</p>
-                        <button class="btn btn-outline" onclick="loadData()" style="margin-top:12px;">Try Again</button>
-                    </div>`;
-                document.getElementById('serverStatus').textContent = 'Error';
-                document.getElementById('serverStatus').style.color = '#e53935';
-            }
-        }
-
-        // ── Date formatting ──
-        function formatDate(dateValue) {
-            if (!dateValue) return '';
-            try {
-                let date;
-                if (typeof dateValue === 'number') {
-                    date = new Date((dateValue - 25569) * 86400 * 1000);
-                } else if (dateValue instanceof Date) {
-                    date = dateValue;
-                } else {
-                    date = new Date(dateValue);
-                }
-                if (isNaN(date.getTime())) return dateValue.toString();
-                return date.toLocaleDateString('en-US');
-            } catch (e) {
-                return dateValue.toString();
-            }
-        }
-
-        // ── Build field grid ──
-        function createResearchFieldsGrid() {
-            const grid = document.getElementById('researchFieldsGrid');
-            grid.innerHTML = '';
-            researchFields.forEach(field => {
-                const card = document.createElement('div');
-                card.className = 'field-card';
-                card.onclick = () => toggleField(field);
-                const displayName = fieldToOriginalMap.get(field) || field;
-                const count = fieldProjectCount[field] || 0;
-                card.innerHTML = `
-                    <div class="field-name">${displayName}</div>
-                    <div class="field-count-badge">${count} project${count !== 1 ? 's' : ''}</div>`;
-                grid.appendChild(card);
-            });
-        }
-
-        // ── Toggle field ──
-        function toggleField(field) {
-            const idx = selectedFields.indexOf(field);
-            if (idx > -1) selectedFields.splice(idx, 1);
-            else selectedFields.push(field);
-            updateFieldSelection();
-            filterProjects();
-            renderProjects();
-        }
-
-        // ── Update field UI ──
-        function updateFieldSelection() {
-            document.querySelectorAll('.field-card').forEach(card => {
-                const displayName = card.querySelector('.field-name').textContent;
-                const nf = [...fieldToOriginalMap.entries()].find(([, v]) => v === displayName)?.[0];
-                card.classList.toggle('selected', selectedFields.includes(nf));
-            });
-
-            const summary = document.getElementById('selectionSummary');
-            const count = document.getElementById('selectedCount');
-            const container = document.getElementById('selectedFields');
-
-            if (selectedFields.length > 0) {
-                summary.classList.replace('hide', 'show');
-                count.textContent = selectedFields.length;
-                container.innerHTML = selectedFields.map(field => {
-                    const displayName = fieldToOriginalMap.get(field) || field;
-                    return `<div class="selected-tag">${displayName}<span class="remove-tag" onclick="toggleField('${field}')">✕</span></div>`;
-                }).join('');
-            } else {
-                summary.classList.replace('show', 'hide');
-            }
-        }
-
-        // ── Filter projects ──
-        function filterProjects() {
-            if (selectedFields.length === 0) {
-                filteredProjects = [...allProjects];
-            } else {
-                filteredProjects = allProjects.filter(p =>
-                    selectedFields.some(f =>
-                        normalizeFieldName(p.primaryFocus) === f ||
-                        normalizeFieldName(p.secondaryFocus) === f
-                    )
-                );
-            }
-        }
-
-        // ── Sort ──
-        function applySortAndRender() {
-            currentSort = document.getElementById('sortSelect').value;
-            renderProjects();
-        }
-
-        function getSortedProjects() {
-            const arr = [...filteredProjects];
-            if (currentSort === 'title_asc') {
-                arr.sort((a, b) => a.title.localeCompare(b.title));
-            } else if (currentSort === 'start_desc') {
-                arr.sort((a, b) => new Date(b.projectStart) - new Date(a.projectStart));
-            } else if (currentSort === 'start_asc') {
-                arr.sort((a, b) => new Date(a.projectStart) - new Date(b.projectStart));
-            }
-            return arr;
-        }
-
-        // ── Render projects ──
-        function renderProjects() {
-            const container = document.getElementById('projectsList');
-            const resultsCount = document.getElementById('resultsCount');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const downloadExcelBtn = document.getElementById('downloadExcelBtn');
-
-            if (filteredProjects.length === 0) {
-                resultsCount.textContent = '0 projects';
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                            <circle cx="24" cy="24" r="20" stroke="#00A887" stroke-width="2"/>
-                            <path d="M16 24h16M24 16v16" stroke="#00A887" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        <h3>No projects found</h3>
-                        <p>Try selecting a different research focus area.</p>
-                    </div>`;
-                downloadBtn.disabled = true;
-                downloadExcelBtn.disabled = true;
-                return;
-            }
-
-            const sorted = getSortedProjects();
-            resultsCount.textContent = `${filteredProjects.length} project${filteredProjects.length !== 1 ? 's' : ''}`;
-
-            container.innerHTML = `<div class="projects-list">${sorted.map(p => createProjectCard(p)).join('')}</div>`;
-            updateDownloadButtons();
-        }
-
-        // ── Project card HTML ──
-        function createProjectCard(project) {
-            const isSelected = selectedProjects.has(project.id);
-            return `
-                <div class="project-card ${isSelected ? 'selected' : ''}">
-                    <input type="checkbox" class="project-checkbox"
-                           ${isSelected ? 'checked' : ''}
-                           onchange="toggleProjectSelection(${JSON.stringify(project.id)})" />
-                    <div class="project-title">${project.title}</div>
-                    <div class="project-meta">
-                        ${project.pi ? `<div class="meta-item"><span class="meta-label">PI</span><span class="meta-value">${project.pi}</span></div>` : ''}
-                        ${(project.projectStart || project.projectEnd) ? `<div class="meta-item"><span class="meta-label">Period</span><span class="meta-value">${project.projectStart}${project.projectStart && project.projectEnd ? ' – ' : ''}${project.projectEnd}</span></div>` : ''}
-                        ${project.type ? `<div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">${project.type}</span></div>` : ''}
-                    </div>
-                    <div class="project-badges">
-                        ${project.primaryFocus ? `<span class="focus-badge badge-primary">${project.primaryFocus}</span>` : ''}
-                        ${project.secondaryFocus ? `<span class="focus-badge badge-secondary">${project.secondaryFocus}</span>` : ''}
-                    </div>
-                </div>`;
-        }
-
-        // ── Selection helpers ──
-        function toggleProjectSelection(projectId) {
-            if (selectedProjects.has(projectId)) selectedProjects.delete(projectId);
-            else selectedProjects.add(projectId);
-            updateProjectCardStyles();
-            updateDownloadButtons();
-        }
-
-        function selectAllProjects() {
-            filteredProjects.forEach(p => selectedProjects.add(p.id));
-            updateProjectCardStyles();
-            updateDownloadButtons();
-        }
-
-        function clearProjectSelection() {
-            selectedProjects.clear();
-            updateProjectCardStyles();
-            updateDownloadButtons();
-        }
-
-        function updateProjectCardStyles() {
-            document.querySelectorAll('.project-checkbox').forEach(cb => {
-                const id = JSON.parse(cb.getAttribute('onchange').match(/toggleProjectSelection\((.*?)\)/)[1]);
-                const card = cb.closest('.project-card');
-                cb.checked = selectedProjects.has(id);
-                card.classList.toggle('selected', selectedProjects.has(id));
-            });
-        }
-
-        function updateDownloadButtons() {
-            const n = selectedProjects.size;
-            document.getElementById('selectedProjectCount').textContent = n;
-            document.getElementById('selectedProjectCountPDF').textContent = n;
-            document.getElementById('downloadBtn').disabled = n === 0;
-            document.getElementById('downloadExcelBtn').disabled = n === 0;
-        }
-
-        function clearSelection() {
-            selectedFields = [];
-            selectedProjects.clear();
-            updateFieldSelection();
-            filterProjects();
-            renderProjects();
-        }
-
-        function refreshData() {
-            document.getElementById('projectsList').innerHTML = `
-                <div class="loading-state"><div class="spinner"></div><p>Refreshing…</p></div>`;
-            loadData();
-        }
-
-        // ── Toast notification ──
-        function showToast(message) {
-            const existing = document.querySelector('.success-toast');
-            if (existing) existing.remove();
-            const toast = document.createElement('div');
-            toast.className = 'success-toast';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        // ── Excel Export ──
-        function downloadExcel() {
-            if (selectedProjects.size === 0) return;
-            try {
-                const list = allProjects.filter(p => selectedProjects.has(p.id));
-                const wb = XLSX.utils.book_new();
-                const wsData = [['No.', 'Title', 'PI', 'Primary Focus', 'Secondary Focus', 'Type', 'Project Start', 'Project End']];
-                list.forEach((p, i) => wsData.push([i + 1, p.title, p.pi, p.primaryFocus, p.secondaryFocus, p.type, p.projectStart, p.projectEnd]));
-                const ws = XLSX.utils.aoa_to_sheet(wsData);
-                ws['!cols'] = [{ wch: 5 }, { wch: 60 }, { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 15 }];
-                XLSX.utils.book_append_sheet(wb, ws, 'KEI Projects');
-
-                const fieldNames = selectedFields.map(f => fieldToOriginalMap.get(f) || f);
-                const metaData = [
-                    ['KEI Research Projects Export'], [''],
-                    ['Export Date:', new Date().toLocaleDateString('en-US')],
-                    ['Total Projects:', list.length],
-                    ['Selected Focus:', fieldNames.length > 0 ? fieldNames.join(', ') : 'All Fields']
-                ];
-                const metaWs = XLSX.utils.aoa_to_sheet(metaData);
-                metaWs['!cols'] = [{ wch: 18 }, { wch: 50 }];
-                XLSX.utils.book_append_sheet(wb, metaWs, 'Export Info');
-
-                const fname = `KEI_Projects_${new Date().toISOString().split('T')[0]}.xlsx`;
-                XLSX.writeFile(wb, fname);
-                showToast(`Excel downloaded — ${list.length} projects`);
-            } catch (e) {
-                console.error(e);
-                alert('Excel export failed. Please try again.');
-            }
-        }
-
-        // ── PDF Export ──
-        async function downloadPDF() {
-            if (selectedProjects.size === 0) return;
-            try {
-                const originalHTML = document.getElementById('projectsList').innerHTML;
-                document.getElementById('projectsList').innerHTML = `
-                    <div class="loading-state"><div class="spinner"></div><p>Generating PDF…</p></div>`;
-
-                if (typeof html2canvas === 'undefined') throw new Error('html2canvas not loaded.');
-                let jsPDF = window.jspdf?.jsPDF || window.jsPDF;
-                if (!jsPDF) throw new Error('jsPDF not loaded.');
-
-                const list = allProjects.filter(p => selectedProjects.has(p.id));
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfW = pdf.internal.pageSize.getWidth();
-                const pdfH = pdf.internal.pageSize.getHeight();
-                const margin = 15;
-                const cw = pdfW - margin * 2;
-
-                // Header
-                const hEl = document.createElement('div');
-                hEl.style.cssText = 'position:absolute;left:-9999px;top:0;width:540px;background:#fff;font-family:Inter,sans-serif;padding:10px';
-                hEl.innerHTML = `
-                    <div style="text-align:center;margin-bottom:16px;padding:12px 0;border-bottom:2px solid #00A887">
-                        <div style="color:#00A887;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">Korea Environment Institute</div>
-                        <div style="color:#2d3a40;font-size:20px;font-weight:700;margin-bottom:6px">Research Project Export</div>
-                        ${selectedFields.length > 0 ? `<div style="color:#555;font-size:12px">Focus: ${selectedFields.map(f => fieldToOriginalMap.get(f) || f).join(', ')}</div>` : ''}
-                        <div style="color:#888;font-size:11px;margin-top:4px">${new Date().toLocaleDateString('en-US')} · ${list.length} Projects</div>
-                    </div>`;
-                document.body.appendChild(hEl);
-                const hCanvas = await html2canvas(hEl, { scale: 2, useCORS: true, backgroundColor: '#fff' });
-                const hH = (hCanvas.height * cw) / hCanvas.width;
-                pdf.addImage(hCanvas.toDataURL('image/png'), 'PNG', margin, margin, cw, hH);
-                document.body.removeChild(hEl);
-                let y = margin + hH + 5;
-
-                for (let i = 0; i < list.length; i++) {
-                    const p = list[i];
-                    const cEl = document.createElement('div');
-                    cEl.style.cssText = 'position:absolute;left:-9999px;top:0;width:540px;background:#fff;font-family:Inter,sans-serif';
-                    cEl.innerHTML = `
-                        <div style="border:1px solid #dde8ec;border-left:4px solid #00A887;border-radius:8px;padding:12px 14px;margin:0;background:#fff">
-                            <div style="font-size:13px;font-weight:600;color:#2d3a40;margin-bottom:8px;line-height:1.4">${p.title}</div>
-                            <div style="display:flex;gap:20px;font-size:11px;color:#555;margin-bottom:8px">
-                                ${p.pi ? `<span><b style="color:#7a95a8;text-transform:uppercase;font-size:10px">PI</b>&nbsp;${p.pi}</span>` : ''}
-                                ${p.projectStart ? `<span><b style="color:#7a95a8;text-transform:uppercase;font-size:10px">Period</b>&nbsp;${p.projectStart} – ${p.projectEnd}</span>` : ''}
-                                ${p.type ? `<span><b style="color:#7a95a8;text-transform:uppercase;font-size:10px">Type</b>&nbsp;${p.type}</span>` : ''}
-                            </div>
-                            <div style="display:flex;gap:6px;flex-wrap:wrap">
-                                ${p.primaryFocus ? `<span style="background:#e0f8f4;color:#007a63;border:1px solid #7dd4c8;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600">${p.primaryFocus}</span>` : ''}
-                                ${p.secondaryFocus ? `<span style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600">${p.secondaryFocus}</span>` : ''}
-                            </div>
-                        </div>`;
-                    document.body.appendChild(cEl);
-                    const cCanvas = await html2canvas(cEl, { scale: 2, useCORS: true, backgroundColor: '#fff' });
-                    document.body.removeChild(cEl);
-                    const cH = (cCanvas.height * cw) / cCanvas.width;
-                    if (y + cH > pdfH - margin) { pdf.addPage(); y = margin; }
-                    pdf.addImage(cCanvas.toDataURL('image/png'), 'PNG', margin, y, cw, cH);
-                    y += cH + 4;
-                }
-
-                pdf.save(`KEI_Projects_${new Date().toISOString().split('T')[0]}.pdf`);
-                document.getElementById('projectsList').innerHTML = originalHTML;
-                showToast(`PDF downloaded — ${list.length} projects`);
-            } catch (e) {
-                console.error(e);
-                renderProjects();
-                alert('PDF export failed. Please try again.');
-            }
-        }
-
-        // ── Last update time ──
-        function updateLastUpdateTime(ts) {
-            const d = ts ? new Date(ts) : new Date();
-            document.getElementById('lastUpdate').textContent = d.toLocaleDateString('en-US');
-        }
-
-        // ── Keyboard shortcuts ──
-        document.addEventListener('keydown', e => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-            if (e.ctrlKey && e.key === 'a') { e.preventDefault(); selectedFields = [...researchFields]; updateFieldSelection(); filterProjects(); renderProjects(); }
-            if (e.ctrlKey && e.key === 'd') { e.preventDefault(); clearSelection(); }
-            if (e.ctrlKey && e.key === 's') { e.preventDefault(); if (selectedProjects.size > 0) downloadPDF(); }
-            if (e.ctrlKey && e.key === 'e') { e.preventDefault(); if (selectedProjects.size > 0) downloadExcel(); }
-            if (e.key === 'F5') { e.preventDefault(); refreshData(); }
-        });
-    </script>
-</body>
+    <script src="scripts/data/contract.js"></script>
+    <script src="scripts/app.js"></script>
+  </body>
 </html>
