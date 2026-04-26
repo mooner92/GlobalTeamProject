@@ -1,196 +1,184 @@
 # KEI Project Search by Research Focus
 
-A web-based tool for browsing and filtering Korea Environment Institute (KEI) research projects by research focus areas, with export capabilities to PDF and Excel formats.
+A static web app for browsing KEI research projects by research focus area, with PDF and Excel export.
 
 ## Overview
 
 ### Purpose
-This project provides an intuitive interface to:
-- Browse KEI research projects organized by research focus areas
-- Filter projects by selecting one or multiple research focus categories
-- Export selected projects to PDF or Excel format for sharing with external researchers and partner institutions
-- Facilitate collaboration and knowledge sharing across institutions
+
+- Browse projects by one or more research focus areas
+- Filter projects using focus, search, and date range controls
+- Export selected projects to PDF or Excel
+- Maintain static-only runtime for easy internal distribution
 
 ### Background
-This project is a collaborative effort between:
-- **KEI AI Data Team**: Responsible for data management, technical implementation, and AI/data infrastructure
-- **KEI Global Cooperation Team**: Focused on international research collaboration and partnership development
 
-## Features
-
-- **Dynamic Filtering**: Select one or more research focus areas to filter projects instantly
-- **Interactive UI**: Modern, responsive interface with visual feedback
-- **Multi-select Export**: Choose specific projects for export
-- **Dual Export Formats**: 
-  - **PDF**: Formatted document with complete project details
-  - **Excel**: Structured data table with metadata sheet
-- **Real-time Statistics**: View project counts and selected items at a glance
-- **Keyboard Shortcuts**: Efficient navigation and actions
+- **KEI AI Data Team**: Data management and technical implementation
+- **KEI Global Cooperation Team**: Requirements and user workflow support
 
 ## Technology Stack
 
-- **Frontend**: Pure HTML5, CSS3, JavaScript (ES6+)
+- **Frontend**: HTML5, CSS, JavaScript (ES6+)
+- **Runtime/tooling**: Node.js scripts and Python HTTP server
 - **Libraries**:
-  - [SheetJS (xlsx.js)](https://github.com/SheetJS/sheetjs) - Excel file parsing
+  - [SheetJS (xlsx.js)](https://github.com/SheetJS/sheetjs) - Excel parsing
   - [jsPDF](https://github.com/parallax/jsPDF) - PDF generation
-  - [html2canvas](https://github.com/niklasvh/html2canvas) - HTML to canvas rendering for PDF
+  - [html2canvas](https://github.com/niklasvh/html2canvas) - PDF snapshot rendering
 
 ## Installation & Usage
 
 ### Quick Start
 
 1. **Clone the repository**
+
 ```bash
-   git clone https://github.com/yourusername/kei-project-search.git
-   cd kei-project-search
+git clone https://github.com/mooner92/GlobalTeamProject.git
+cd GlobalTeamProject
 ```
 
-2. **Open the application**
-   - Simply open `index.html` in a modern web browser
-   - No server setup required - runs entirely client-side
+2. **Install dependencies**
 
-3. **Start browsing**
-   - Research focus areas will load automatically
-   - Click on focus areas to filter projects
-   - Select projects using checkboxes
-   - Export using PDF or Excel buttons
+```bash
+npm install
+```
+
+3. **Start the local static runtime**
+
+```bash
+npm run dev
+```
+
+- The app is served at `http://127.0.0.1:4173/index.html`
+- Keep this command running while validating the app locally
+
+4. **Validate runtime health** (in a second terminal)
+
+```bash
+npm run health:app
+```
+
+- Checks that `/index.html` and `/data/projects.xlsx` are reachable
+
+5. **Run quality and verification checks**
+
+```bash
+npm run ci:local
+```
+
+- Runs lint, format checks, e2e tests, data validation, and security checks in one command
 
 ### Updating Project Data
 
-The application reads project data from `data/projects.xlsx`. To update the project list:
+The app reads `data/projects.xlsx` directly.
 
-1. **Prepare your Excel file**
-   - Ensure the file contains a sheet named `List`
-   - The sheet must include these columns (case-insensitive):
-     - `No.` - Project number/ID
-     - `Type` - Project type/category
-     - `Title` - Project title
-     - `PI` - Principal Investigator name
-     - `Primary Focus` - Main research focus area
-     - `Secondary Focus` - Secondary research focus area
-     - `Project Start` - Start date
-     - `Project End` - End date
+1. Prepare a spreadsheet with a `List` sheet
+2. Ensure these header names are present (case-insensitive):
+   - `No.`, `Type`, `Title`, `PI`, `Primary Focus`, `Secondary Focus`, `Project Start`, `Project End`
+3. Replace the data file:
 
-2. **Replace the data file**
 ```bash
-   # Rename your file to projects.xlsx
-   mv your-updated-file.xlsx data/projects.xlsx
+mv your-updated-file.xlsx data/projects.xlsx
 ```
 
-3. **Verify the update**
-   - Refresh the web page
-   - Check that new projects appear and statistics are updated
-
-### Excel File Requirements
-
-**Required sheet name**: `List`
-
-**Column format example**:
-
-| No.  | Type  | Title                       | PI       | Primary Focus  | Secondary Focus | Project Start | Project End |
-| ---- | ----- | --------------------------- | -------- | -------------- | --------------- | ------------- | ----------- |
-| 1    | Basic | Climate Change Impact Study | John Doe | Climate Change | Water Resources | 2024-01-01    | 2024-12-31  |
-
-**Important notes**:
-- The first row containing "Primary Focus" and "Secondary Focus" is detected as the header
-- Dates can be in Excel date format or text format (will be automatically converted)
-- Empty cells are handled gracefully
-- Case-insensitive header matching
+4. Re-run `npm run validate:data`
 
 ## Project Structure
-```
-kei-project-search/
-│
-├── index.html              # Main application file (all-in-one)
+
+```text
+GlobalTeamProject/
+├── index.html                 # Main application entry
+├── styles/                    # Shared stylesheet assets
+├── scripts/
+│   ├── ci-local.mjs           # Local quality orchestration
+│   ├── health-app.mjs         # Runtime endpoint checks
+│   ├── check-security.mjs     # Spreadsheet source safety checks
+│   ├── perf-export.mjs        # Export performance workflow checks
+│   ├── validate-data.mjs      # Data contract validator
+│   ├── verify-export-flow.mjs  # Export verification flow
+│   ├── verify-keyboard-accessibility.mjs
+│   ├── verify-search-date-filter.mjs
+│   └── docs-check.mjs         # Documentation consistency checks
+├── tests/
+│   └── e2e/                   # Playwright-based workflow checks
 ├── data/
-│   └── projects.xlsx       # Project data source (List sheet)
-├── README.md               # This file
-└── LICENSE                 # License information
+│   └── projects.xlsx          # Input spreadsheet for all project data
+├── .sisyphus/                 # Internal operation and planning notes
+├── package.json
+└── ReadMe.md
 ```
 
-## How It Works
+## How it works
 
-### Data Loading Process
-
-1. **Excel Parsing**: On page load, the application fetches `data/projects.xlsx` using the browser's Fetch API
-2. **Sheet Reading**: Uses SheetJS to parse the Excel file and locate the `List` sheet
-3. **Header Detection**: Automatically finds the header row by searching for "Primary Focus" and "Secondary Focus"
-4. **Data Extraction**: Maps columns to project properties and validates data
-5. **Research Focus Aggregation**: Extracts unique research focus areas and counts projects per focus
-
-### Filtering Mechanism
-
-- **Normalization**: Research focus names are normalized (case-insensitive, trimmed) for consistent matching
-- **Multi-select Logic**: Projects matching ANY selected focus (primary OR secondary) are displayed
-- **Dynamic Updates**: UI updates in real-time as selections change
-
-### Export Features
-
-#### PDF Export
-- Uses `html2canvas` to render each project card as an image
-- Combines images into a multi-page PDF using `jsPDF`
-- Includes header with metadata (date, selected focuses, total count)
-- Automatic page breaks for long lists
-- Fallback to text rendering if image capture fails
-
-#### Excel Export
-- Creates a new workbook with two sheets:
-  1. **KEI Projects**: Data table with selected projects
-  2. **Export Info**: Metadata (date, counts, field descriptions)
-- Includes column formatting and styling
-- Automatically adjusts column widths
+- The app runs entirely in the browser and loads `data/projects.xlsx` through `fetch` from a local static server.
+- SheetJS maps the `List` sheet to project records, normalizes focus fields, and derives project counts.
+- Filtering is applied across multiple focus, title/PI search, and date range criteria.
+- Export flows generate a filtered dataset and render either a multi-page PDF or a structured Excel workbook.
 
 ## Keyboard Shortcuts
 
-- `Ctrl + A`: Select all research focus areas
-- `Ctrl + D`: Clear all selections
+- `Ctrl + A`: Select all focus chips
+- `Ctrl + D`: Clear all focus filters
 - `Ctrl + S`: Download PDF
 - `Ctrl + E`: Download Excel
-- `F5`: Refresh data
 
-## Browser Compatibility
+## Validation and Quality Workflow
 
-Tested and working on:
-- Chrome 90+
-- Firefox 88+
-- Edge 90+
-- Safari 14+
+Use the scripts that exist in this repository:
 
-**Note**: Requires a modern browser with ES6+ support and Fetch API.
+```bash
+npm run lint            # ESLint checks
+npm run format:check    # Prettier format validation
+npm run test:e2e        # Full Playwright verification flow
+npm run validate:data   # Spreadsheet schema and header checks
+npm run check:security  # Data rendering safety checks
+npm run verify:export   # Export workflow verification
+npm run verify:keyboard # Keyboard interaction checks
+npm run verify:search-date # Search and date filter verification
+npm run perf:export     # Export performance smoke check
+npm run docs:check      # Docs snippets and reference consistency checks
+npm run ci:local        # Orchestrates a local quality gate sequence
+```
+
+Pre-commit gate (optional but recommended):
+
+```bash
+npm run prepare          # installs husky hooks
+git commit ...           # runs lint-staged checks on staged files
+```
+
+For a docs-first sanity check:
+
+```bash
+npm run docs:check
+npm run dev            # in one terminal
+npm run health:app      # in another terminal
+```
 
 ## Known Limitations
 
-- All processing happens client-side - large Excel files (>5MB) may cause slow loading
-- PDF generation with many projects (>100) can take time
-- No server-side validation or authentication
-- Static mode only - no real-time collaboration features
+- Static-only mode, no backend or authentication layer
+- Large spreadsheets can increase first paint and export time
+- Browser memory limits can affect very large exports
 
-## Future Enhancements
+## Future Work
 
-- [ ] Add search functionality for project titles and PIs
-- [ ] Implement date range filtering
-- [ ] Add project detail view modal
-- [ ] Support multiple Excel files or CSV format
-- [ ] Add data visualization (charts, graphs)
-- [ ] Implement user preferences storage (localStorage)
+- Improve spreadsheet validation messages for edge cases
+- Add optional richer analytics views for focus trends
+- Add additional export layout presets for repeated reporting use cases
 
-## Contributing
+## Contributing and Support
 
-This is an internal KEI project. For bug reports or feature requests, please contact:
-- AI Data Team: [contact email]
-- Global Cooperation Team: [contact email]
+This is an internal KEI project. Please route bug reports and feature requests through KEI internal channels.
 
 ## License
 
-[Specify your license here - e.g., MIT, Apache 2.0, or Internal Use Only]
+Internal project use only, proprietary by Korea Environment Institute.
 
 ## Acknowledgments
 
-Developed by Korea Environment Institute (KEI)
-- AI Data Team: Technical development and data infrastructure
-- Global Cooperation Team: Requirements and international collaboration support
+- Korea Environment Institute (KEI)
+- KEI AI Data Team
+- KEI Global Cooperation Team
 
----
-
-**Korea Environment Institute (한국환경연구원)**  
+**Korea Environment Institute (한국환경연구원)**
 Website: https://www.kei.re.kr

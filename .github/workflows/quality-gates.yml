@@ -1,0 +1,30 @@
+name: Quality Gates
+
+on:
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  ci-local-parity:
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium firefox
+
+      - name: Run local-equivalent quality gates
+        run: npm run ci:local

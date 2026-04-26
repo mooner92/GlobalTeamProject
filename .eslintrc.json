@@ -1,0 +1,53 @@
+{
+  "root": true,
+  "extends": ["eslint:recommended"],
+  "ignorePatterns": [
+    "node_modules/",
+    ".playwright-browsers/",
+    ".sisyphus/evidence/"
+  ],
+  "overrides": [
+    {
+      "files": ["scripts/app.js"],
+      "env": {
+        "browser": true,
+        "es2022": true
+      },
+      "globals": {
+        "XLSX": "readonly",
+        "html2canvas": "readonly",
+        "jspdf": "readonly"
+      }
+    },
+    {
+      "files": ["scripts/data/contract.js"],
+      "env": {
+        "browser": true,
+        "node": true,
+        "es2022": true
+      }
+    },
+    {
+      "files": ["playwright.config.js", "tests/**/*.js", "scripts/**/*.mjs"],
+      "env": {
+        "node": true,
+        "es2022": true
+      },
+      "parserOptions": {
+        "sourceType": "module"
+      }
+    },
+    {
+      "files": ["scripts/**/*.mjs"],
+      "rules": {
+        "no-undef": "off"
+      }
+    },
+    {
+      "files": ["tests/**/*.js"],
+      "rules": {
+        "no-undef": "off"
+      }
+    }
+  ]
+}

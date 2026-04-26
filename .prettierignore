@@ -1,0 +1,8 @@
+.git/
+node_modules/
+.playwright-browsers/
+.npm-cache/
+.sisyphus/
+.sisyphus/evidence/
+data/fixtures/*.xlsx
+data/projects.xlsx
