@@ -19,11 +19,171 @@ const performanceConfig = getPerformanceConfig();
 let activeRenderToken = 0;
 let isPdfExportInProgress = false;
 
+// F3 facet state
+let selectedTypes = new Set();
+let selectedYears = new Set();
+
+// F2 modal state
+let lastFocusBeforeModal = null;
+let currentModalProjectId = null;
+
 document.addEventListener("DOMContentLoaded", function () {
+  // F1: Bootstrap language
+  var initialLang = KEII18n.getLang();
+  KEII18n.setLang(initialLang);
+  KEII18n.applyLang(initialLang);
+  applyLangToDateInputs(initialLang);
+
+  // F1: Lang toggle click handler
+  var langToggleBtn = document.getElementById("langToggle");
+  if (langToggleBtn) {
+    langToggleBtn.addEventListener("click", function () {
+      var current = KEII18n.getLang();
+      var next = current === "ko" ? "en" : "ko";
+      KEII18n.setLang(next);
+      KEII18n.applyLang(next);
+      var statusKey = next === "ko" ? "lang.switched.ko" : "lang.switched.en";
+      announceInteractionStatus(KEII18n.t(statusKey, next));
+    });
+  }
+
+  // F1: Re-render on language change
+  document.addEventListener("kei:langchanged", function (e) {
+    var nextLang = (e && e.detail && e.detail.lang) || KEII18n.getLang();
+    applyLangToDateInputs(nextLang);
+    renderProjects();
+    renderFacetChips();
+    refreshDynamicLabels();
+  });
+
+  // F3: Reset filters button
+  var resetBtn = document.getElementById("resetFiltersBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", function () {
+      selectedFields = [];
+      searchQuery = "";
+      var searchInput = document.getElementById("projectSearchInput");
+      if (searchInput) searchInput.value = "";
+      var dateStart = document.getElementById("projectDateStart");
+      if (dateStart) dateStart.value = "";
+      var dateEnd = document.getElementById("projectDateEnd");
+      if (dateEnd) dateEnd.value = "";
+      appliedDateRange = { startTimestamp: null, endTimestamp: null };
+      selectedTypes = new Set();
+      selectedYears = new Set();
+      setDateRangeFeedback("");
+      updateFieldSelection();
+      filterProjects();
+      renderProjects();
+      renderFacetChips();
+      syncUrlParams();
+    });
+  }
+
+  // F2: Modal close via backdrop/close-button (delegated)
+  document.addEventListener("click", function (e) {
+    if (
+      e.target &&
+      (e.target.hasAttribute("data-modal-close") ||
+        e.target.closest("[data-modal-close]"))
+    ) {
+      var modal = document.getElementById("projectModal");
+      if (modal && !modal.hidden) {
+        closeProjectModal();
+      }
+    }
+  });
+
+  // F2: Modal focus trap + ESC
+  document.addEventListener("keydown", function (e) {
+    var modal = document.getElementById("projectModal");
+    if (!modal || modal.hidden) return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeProjectModal();
+      return;
+    }
+    if (e.key === "Tab") {
+      var card = modal.querySelector(".project-modal-card");
+      if (!card) return;
+      var focusable = Array.from(
+        card.querySelectorAll(
+          'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter(function (el) {
+        return el.offsetParent !== null;
+      });
+      if (focusable.length === 0) return;
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      // Card has tabindex="-1" so it is not in `focusable`; redirect Tab/
+      // Shift+Tab from card to first/last to keep focus inside the modal.
+      if (document.activeElement === card) {
+        e.preventDefault();
+        if (e.shiftKey) last.focus();
+        else first.focus();
+        return;
+      }
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+  });
+
+  // F2: Wire copy-link and copy-citation buttons
+  var copyLinkBtn = document.getElementById("projectModalCopyLink");
+  if (copyLinkBtn) {
+    copyLinkBtn.addEventListener("click", function () {
+      if (currentModalProjectId !== null) {
+        copyProjectLink(currentModalProjectId);
+      }
+    });
+  }
+  var copyCiteBtn = document.getElementById("projectModalCopyCite");
+  if (copyCiteBtn) {
+    copyCiteBtn.addEventListener("click", function () {
+      if (currentModalProjectId !== null) {
+        copyProjectCitation(currentModalProjectId);
+      }
+    });
+  }
+
+  // F2: popstate — handle back/forward hash changes
+  window.addEventListener("popstate", function () {
+    var hashId = parseHashProjectId();
+    var modal = document.getElementById("projectModal");
+    if (hashId !== null) {
+      openProjectModal(hashId, true);
+    } else if (modal && !modal.hidden) {
+      closeProjectModal(true);
+    }
+  });
+
   initializeResultsToolbarControls();
   updateServerStatus();
   loadData();
 });
+
+// F1: Refresh labels that are generated by JS and need re-render on lang change
+function refreshDynamicLabels() {
+  createResearchFieldsGrid();
+}
+
+// F1: localized date helper
+function localizedDate(date) {
+  return new Date(date).toLocaleDateString(
+    KEII18n.getLang() === "ko" ? "ko-KR" : "en-US",
+    { year: "numeric", month: "short", day: "numeric" },
+  );
+}
 
 function normalizeFieldName(fieldName) {
   if (
@@ -78,6 +238,7 @@ function handleSearchInputChange(event) {
   searchQuery = normalizeSearchQuery(event.target.value);
   filterProjects();
   renderProjects();
+  syncUrlParams();
 }
 
 function parseDateInputValue(inputValue, useEndOfDay) {
@@ -139,7 +300,8 @@ function applyDateRangeFromInputs() {
     nextEndTimestamp !== null &&
     nextEndTimestamp < nextStartTimestamp
   ) {
-    setDateRangeFeedback("End date must be on or after start date.");
+    var lang = KEII18n.getLang();
+    setDateRangeFeedback(KEII18n.t("toast.date.invalid", lang));
     return false;
   }
 
@@ -154,14 +316,14 @@ function applyDateRangeFromInputs() {
 function handleDateRangeInputChange() {
   const isValidRange = applyDateRangeFromInputs();
   if (!isValidRange) {
-    announceInteractionStatus(
-      "Invalid date range. End date must be on or after start date.",
-    );
+    var lang = KEII18n.getLang();
+    announceInteractionStatus(KEII18n.t("toast.date.invalid", lang));
     return;
   }
 
   filterProjects();
   renderProjects();
+  syncUrlParams();
 }
 
 function hasActiveDateRangeFilter() {
@@ -233,6 +395,51 @@ function projectMatchesDateRange(project) {
   return true;
 }
 
+// F3: type/year facet matching
+function projectMatchesTypeFacet(project) {
+  if (selectedTypes.size === 0) return true;
+  return selectedTypes.has(project.type);
+}
+
+function projectMatchesYearFacet(project) {
+  if (selectedYears.size === 0) return true;
+  var ts = Number.isFinite(project.projectStartTimestamp)
+    ? project.projectStartTimestamp
+    : Number.isFinite(project.projectEndTimestamp)
+      ? project.projectEndTimestamp
+      : null;
+  if (ts === null) return false;
+  var year = String(new Date(ts).getUTCFullYear());
+  return selectedYears.has(year);
+}
+
+// F3: "exclude self" facet count — count projects matching all filters EXCEPT
+// the chip's own facet dimension, then filter by this chip's value.
+function computeFacetCount(facetType, facetValue) {
+  return allProjects.filter(function (project) {
+    var passesFields = projectMatchesSelectedFields(project);
+    var passesSearch = projectMatchesSearch(project);
+    var passesDate = projectMatchesDateRange(project);
+    var passesOtherFacet =
+      facetType === "type"
+        ? projectMatchesYearFacet(project)
+        : projectMatchesTypeFacet(project);
+    if (!passesFields || !passesSearch || !passesDate || !passesOtherFacet) {
+      return false;
+    }
+    if (facetType === "type") {
+      return project.type === facetValue;
+    }
+    var ts = Number.isFinite(project.projectStartTimestamp)
+      ? project.projectStartTimestamp
+      : Number.isFinite(project.projectEndTimestamp)
+        ? project.projectEndTimestamp
+        : null;
+    if (ts === null) return false;
+    return String(new Date(ts).getUTCFullYear()) === facetValue;
+  }).length;
+}
+
 function getFilterStateSnapshot() {
   return {
     selectedFields: [...selectedFields],
@@ -298,14 +505,19 @@ function setPdfExportControlsState(isBusy) {
 }
 
 function setPdfExportProgress(currentIndex, totalItems) {
+  var lang = KEII18n.getLang();
   if (totalItems <= 0) {
-    setPdfExportStatus("Preparing PDF export…", false);
+    setPdfExportStatus(KEII18n.t("pdf.preparing", lang), false);
     return;
   }
   const clampedCurrent = Math.min(Math.max(currentIndex, 0), totalItems);
   const percent = Math.round((clampedCurrent / totalItems) * 100);
   setPdfExportStatus(
-    `Generating PDF ${clampedCurrent}/${totalItems} (${percent}%)`,
+    KEII18n.t("pdf.progress", lang, {
+      current: clampedCurrent,
+      total: totalItems,
+      percent: percent,
+    }),
     false,
   );
 }
@@ -406,6 +618,7 @@ function withTimeout(taskPromise, timeoutMs, timeoutMessage) {
 }
 
 function createParserErrorContextItems(errorInfo) {
+  var lang = KEII18n.getLang();
   const details = errorInfo.details || {};
   const items = [];
 
@@ -413,26 +626,40 @@ function createParserErrorContextItems(errorInfo) {
     Array.isArray(details.missingHeaders) &&
     details.missingHeaders.length > 0
   ) {
-    items.push("Missing headers: " + details.missingHeaders.join(", "));
+    items.push(
+      KEII18n.t("error.missing.headers", lang, {
+        list: details.missingHeaders.join(", "),
+      }),
+    );
   }
 
   if (
     Array.isArray(details.availableSheets) &&
     details.availableSheets.length > 0
   ) {
-    items.push("Available sheets: " + details.availableSheets.join(", "));
+    items.push(
+      KEII18n.t("error.available.sheets", lang, {
+        list: details.availableSheets.join(", "),
+      }),
+    );
   }
 
   if (typeof details.headerRowNumber === "number") {
-    items.push("Detected header row: " + details.headerRowNumber);
+    items.push(
+      KEII18n.t("error.detected.row", lang, { row: details.headerRowNumber }),
+    );
   }
 
   if (typeof details.headerScanDepth === "number") {
-    items.push("Header scan depth: " + details.headerScanDepth + " row(s)");
+    items.push(
+      KEII18n.t("error.scan.depth", lang, { depth: details.headerScanDepth }),
+    );
   }
 
   if (details.sheetName) {
-    items.push("Expected sheet: '" + details.sheetName + "'");
+    items.push(
+      KEII18n.t("error.expected.sheet", lang, { name: details.sheetName }),
+    );
   }
 
   return items;
@@ -483,15 +710,18 @@ function buildDataLoadErrorInfo(error) {
 }
 
 function createErrorStateElement(errorInfo) {
+  var lang = KEII18n.getLang();
   const errorState = document.createElement("div");
   errorState.className = "error-state";
 
   const title = document.createElement("h3");
-  title.textContent = "Failed to load data";
+  title.textContent = KEII18n.t("error.title", lang);
 
   const code = document.createElement("p");
   code.className = "error-code";
-  code.textContent = "Error code: " + (errorInfo.code || "DATA_LOAD_FAILED");
+  code.textContent = KEII18n.t("error.code.label", lang, {
+    code: errorInfo.code || "DATA_LOAD_FAILED",
+  });
 
   const detail = document.createElement("p");
   detail.textContent = errorInfo.message;
@@ -502,7 +732,7 @@ function createErrorStateElement(errorInfo) {
   retryButton.type = "button";
   retryButton.className = "btn btn-outline";
   retryButton.style.marginTop = "12px";
-  retryButton.textContent = "Try Again";
+  retryButton.textContent = KEII18n.t("error.retry", lang);
   retryButton.addEventListener("click", loadData);
 
   errorState.appendChild(title);
@@ -526,22 +756,157 @@ function createErrorStateElement(errorInfo) {
 }
 
 function createEmptyStateElement() {
+  var lang = KEII18n.getLang();
   const emptyState = document.createElement("div");
   emptyState.className = "empty-state";
-  emptyState.innerHTML = `
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <circle cx="24" cy="24" r="20" stroke="#00A887" stroke-width="2"/>
-            <path d="M16 24h16M24 16v16" stroke="#00A887" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <h3>No projects found</h3>
-        <p>Try adjusting focus, search, or date filters.</p>`;
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("width", "48");
+  svg.setAttribute("height", "48");
+  svg.setAttribute("viewBox", "0 0 48 48");
+  svg.setAttribute("fill", "none");
+  const circle = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "circle",
+  );
+  circle.setAttribute("cx", "24");
+  circle.setAttribute("cy", "24");
+  circle.setAttribute("r", "20");
+  circle.setAttribute("stroke", "#00A887");
+  circle.setAttribute("stroke-width", "2");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", "M16 24h16M24 16v16");
+  path.setAttribute("stroke", "#00A887");
+  path.setAttribute("stroke-width", "2");
+  path.setAttribute("stroke-linecap", "round");
+  svg.appendChild(circle);
+  svg.appendChild(path);
+
+  const heading = document.createElement("h3");
+  heading.textContent = KEII18n.t("empty.title", lang);
+
+  const hint = document.createElement("p");
+  hint.textContent = KEII18n.t("empty.hint", lang);
+
+  emptyState.appendChild(svg);
+  emptyState.appendChild(heading);
+  emptyState.appendChild(hint);
   return emptyState;
+}
+
+// F3: Seed filter state from URL params before first render
+function seedFiltersFromUrl() {
+  var params = new URLSearchParams(window.location.search);
+
+  // Type facet
+  var typeParam = params.get("type");
+  if (typeParam) {
+    typeParam.split(",").forEach(function (v) {
+      var val = decodeURIComponent(v.trim());
+      if (val) selectedTypes.add(val);
+    });
+  }
+
+  // Year facet
+  var yearParam = params.get("year");
+  if (yearParam) {
+    yearParam.split(",").forEach(function (v) {
+      var val = v.trim();
+      if (val) selectedYears.add(val);
+    });
+  }
+
+  // Search query
+  var qParam = params.get("q");
+  if (qParam) {
+    searchQuery = normalizeSearchQuery(qParam);
+    var searchInput = document.getElementById("projectSearchInput");
+    if (searchInput) searchInput.value = qParam;
+  }
+
+  // Date range
+  var fromParam = params.get("from");
+  var toParam = params.get("to");
+  var dateStart = document.getElementById("projectDateStart");
+  var dateEnd = document.getElementById("projectDateEnd");
+  if (fromParam && dateStart) {
+    dateStart.value = fromParam;
+  }
+  if (toParam && dateEnd) {
+    dateEnd.value = toParam;
+  }
+  if (fromParam || toParam) {
+    applyDateRangeFromInputs();
+  }
+}
+
+// F3: Sync current filter state to URL without page reload
+function syncUrlParams() {
+  var params = new URLSearchParams(window.location.search);
+
+  // Preserve lang param if present
+  if (selectedTypes.size > 0) {
+    params.set(
+      "type",
+      Array.from(selectedTypes).map(encodeURIComponent).join(","),
+    );
+  } else {
+    params.delete("type");
+  }
+
+  if (selectedYears.size > 0) {
+    params.set("year", Array.from(selectedYears).join(","));
+  } else {
+    params.delete("year");
+  }
+
+  if (searchQuery) {
+    params.set("q", searchQuery);
+  } else {
+    params.delete("q");
+  }
+
+  var dateStart = document.getElementById("projectDateStart");
+  var dateEnd = document.getElementById("projectDateEnd");
+  var fromVal = dateStart ? dateStart.value : "";
+  var toVal = dateEnd ? dateEnd.value : "";
+
+  if (fromVal) {
+    params.set("from", fromVal);
+  } else {
+    params.delete("from");
+  }
+
+  if (toVal) {
+    params.set("to", toVal);
+  } else {
+    params.delete("to");
+  }
+
+  var search = params.toString() ? "?" + params.toString() : "";
+  history.replaceState(
+    null,
+    "",
+    window.location.pathname + search + window.location.hash,
+  );
+}
+
+// F2: Parse #project=<id> from location.hash
+function parseHashProjectId() {
+  var hash = window.location.hash;
+  if (!hash || hash.indexOf("#project=") !== 0) return null;
+  var encoded = hash.slice("#project=".length);
+  if (!encoded) return null;
+  return decodeProjectId(encoded);
 }
 
 async function loadData() {
   try {
     const loadConfig = getDataLoadConfig();
-    setProjectsListState(createLoadingStateElement("Loading project data…"));
+    var lang = KEII18n.getLang();
+    setProjectsListState(
+      createLoadingStateElement(KEII18n.t("loading.data", lang)),
+    );
     document.getElementById("dataFile").textContent =
       loadConfig.dataFilePath.split("/").pop() || "projects.xlsx";
 
@@ -596,12 +961,14 @@ async function loadData() {
       ].forEach((field) => {
         const displayField = field.label;
         const normalizedKey = field.key || normalizeFieldName(displayField);
-        if (displayField) {
-          fieldProjectCount[normalizedKey] =
-            (fieldProjectCount[normalizedKey] || 0) + 1;
-          if (!fieldsMap.has(normalizedKey)) {
-            fieldsMap.set(normalizedKey, { original: displayField });
-          }
+        // Defensive: fixtures or older parsed data may still produce empty
+        // labels or keys (the contract should already strip 0/"0"). Skip
+        // anything that would seed a bogus focus chip.
+        if (!displayField || !normalizedKey) return;
+        fieldProjectCount[normalizedKey] =
+          (fieldProjectCount[normalizedKey] || 0) + 1;
+        if (!fieldsMap.has(normalizedKey)) {
+          fieldsMap.set(normalizedKey, { original: displayField });
         }
       });
     });
@@ -610,6 +977,10 @@ async function loadData() {
       fieldToOriginalMap.set(key, value.original);
     });
     researchFields = Array.from(fieldsMap.keys()).sort();
+
+    // F3: Seed filters from URL before first render
+    seedFiltersFromUrl();
+
     filterProjects();
 
     document.getElementById("totalProjectsCount").textContent =
@@ -620,9 +991,28 @@ async function loadData() {
     createResearchFieldsGrid();
     renderProjects();
     updateLastUpdateTime(fileLastModified);
+    renderFacetChips();
 
     document.getElementById("serverStatus").textContent = "Ready";
     document.getElementById("serverStatus").style.color = "#00A887";
+
+    // F2: Deep-link — open modal if #project=<id> in hash
+    var hashId = parseHashProjectId();
+    if (hashId !== null) {
+      var found = allProjects.find(function (p) {
+        return p.id === hashId;
+      });
+      if (found) {
+        openProjectModal(hashId, true);
+      } else {
+        showErrorToast(KEII18n.t("modal.notFound", KEII18n.getLang()));
+        history.replaceState(
+          null,
+          "",
+          window.location.pathname + window.location.search,
+        );
+      }
+    }
   } catch (error) {
     console.error("Data load error:", error);
     const errorInfo = buildDataLoadErrorInfo(error);
@@ -644,13 +1034,34 @@ function formatDate(dateValue) {
       date = new Date(dateValue);
     }
     if (Number.isNaN(date.getTime())) return dateValue.toString();
-    return date.toLocaleDateString("en-US");
+    var lang =
+      typeof KEII18n !== "undefined" && KEII18n.getLang
+        ? KEII18n.getLang()
+        : "en";
+    return date.toLocaleDateString(lang === "ko" ? "ko-KR" : "en-US");
   } catch (e) {
     return dateValue.toString();
   }
 }
 
+// Chromium picks the date-input picker placeholder from the input's `lang`
+// attribute (or its closest ancestor's). Update both the document language
+// and the inputs explicitly so KO/EN toggles affect the placeholder text
+// without requiring the user to change OS locale.
+function applyLangToDateInputs(lang) {
+  var resolved = lang === "ko" ? "ko" : "en";
+  if (typeof document === "undefined") return;
+  if (document.documentElement) {
+    document.documentElement.lang = resolved;
+  }
+  ["projectDateStart", "projectDateEnd"].forEach(function (id) {
+    var input = document.getElementById(id);
+    if (input) input.lang = resolved;
+  });
+}
+
 function createResearchFieldsGrid() {
+  var lang = KEII18n.getLang();
   const grid = document.getElementById("researchFieldsGrid");
   grid.replaceChildren();
   researchFields.forEach((field) => {
@@ -670,15 +1081,27 @@ function createResearchFieldsGrid() {
 
     const countElement = document.createElement("div");
     countElement.className = "field-count-badge";
-    countElement.textContent = `${count} project${count !== 1 ? "s" : ""}`;
+    countElement.textContent =
+      count === 1
+        ? KEII18n.t("field.card.count.one", lang)
+        : KEII18n.t("field.card.count", lang, { count: count });
 
     card.appendChild(nameElement);
     card.appendChild(countElement);
     grid.appendChild(card);
   });
+
+  // Re-apply selected state
+  document.querySelectorAll(".field-card").forEach((card) => {
+    const fieldKey = card.dataset.fieldKey || "";
+    const isSelected = selectedFields.includes(fieldKey);
+    card.classList.toggle("selected", isSelected);
+    card.setAttribute("aria-pressed", String(isSelected));
+  });
 }
 
 function toggleField(field) {
+  var lang = KEII18n.getLang();
   const idx = selectedFields.indexOf(field);
   const displayName = fieldToOriginalMap.get(field) || field;
   if (idx > -1) selectedFields.splice(idx, 1);
@@ -686,8 +1109,12 @@ function toggleField(field) {
   updateFieldSelection();
   filterProjects();
   renderProjects();
+  var key = idx > -1 ? "announce.filter.removed" : "announce.filter.added";
   announceInteractionStatus(
-    `${displayName} filter ${idx > -1 ? "removed" : "selected"}. ${filteredProjects.length} project${filteredProjects.length !== 1 ? "s" : ""} shown.`,
+    KEII18n.t(key, lang, {
+      field: displayName,
+      count: filteredProjects.length,
+    }),
   );
 }
 
@@ -742,7 +1169,9 @@ function filterProjects() {
     return (
       projectMatchesSelectedFields(project) &&
       projectMatchesSearch(project) &&
-      projectMatchesDateRange(project)
+      projectMatchesDateRange(project) &&
+      projectMatchesTypeFacet(project) &&
+      projectMatchesYearFacet(project)
     );
   });
 }
@@ -817,13 +1246,14 @@ function renderProjects() {
 }
 
 async function renderProjectsAsync(renderToken) {
+  var lang = KEII18n.getLang();
   const container = document.getElementById("projectsList");
   const resultsCount = document.getElementById("resultsCount");
   const downloadBtn = document.getElementById("downloadBtn");
   const downloadExcelBtn = document.getElementById("downloadExcelBtn");
 
   if (filteredProjects.length === 0) {
-    resultsCount.textContent = "0 projects";
+    resultsCount.textContent = KEII18n.t("results.count.projects.zero", lang);
     container.replaceChildren(createEmptyStateElement());
     downloadBtn.disabled = true;
     downloadExcelBtn.disabled = true;
@@ -831,7 +1261,9 @@ async function renderProjectsAsync(renderToken) {
   }
 
   const sorted = getSortedProjects();
-  resultsCount.textContent = `${filteredProjects.length} project${filteredProjects.length !== 1 ? "s" : ""}`;
+  resultsCount.textContent = KEII18n.t("results.count.projects", lang, {
+    count: filteredProjects.length,
+  });
 
   const projectList = document.createElement("div");
   projectList.className = "projects-list";
@@ -840,7 +1272,9 @@ async function renderProjectsAsync(renderToken) {
     sorted.length >= performanceConfig.largeRenderThreshold;
   if (useBatchedRendering) {
     container.replaceChildren(
-      createLoadingStateElement(`Rendering ${sorted.length} projects…`),
+      createLoadingStateElement(
+        KEII18n.t("loading.rendering", lang, { count: sorted.length }),
+      ),
     );
     await nextAnimationFrame();
     if (renderToken !== activeRenderToken) {
@@ -916,6 +1350,7 @@ function createFocusBadge(className, value) {
 }
 
 function createProjectCard(project) {
+  var lang = KEII18n.getLang();
   const isSelected = selectedProjects.has(project.id);
   const encodedProjectId = encodeProjectId(project.id);
   const card = document.createElement("div");
@@ -937,24 +1372,37 @@ function createProjectCard(project) {
     toggleProjectSelectionFromCheckbox(checkbox);
   });
 
-  const title = document.createElement("div");
-  title.className = "project-title";
-  title.textContent = project.title || "";
+  // F2: title is a clickable element for opening the modal
+  const titleBtn = document.createElement("button");
+  titleBtn.type = "button";
+  titleBtn.className = "project-title project-title-btn";
+  titleBtn.setAttribute("data-project-title-id", encodeProjectId(project.id));
+  titleBtn.textContent = project.title || "";
+  titleBtn.addEventListener("click", function () {
+    titleBtn.focus();
+    openProjectModal(project.id);
+  });
 
   const projectMeta = document.createElement("div");
   projectMeta.className = "project-meta";
 
   if (project.pi) {
-    projectMeta.appendChild(createProjectMetaItem("PI", project.pi));
+    projectMeta.appendChild(
+      createProjectMetaItem(KEII18n.t("card.field.pi", lang), project.pi),
+    );
   }
 
   if (project.projectStart || project.projectEnd) {
     const period = `${project.projectStart || ""}${project.projectStart && project.projectEnd ? " – " : ""}${project.projectEnd || ""}`;
-    projectMeta.appendChild(createProjectMetaItem("Period", period));
+    projectMeta.appendChild(
+      createProjectMetaItem(KEII18n.t("card.field.period", lang), period),
+    );
   }
 
   if (project.type) {
-    projectMeta.appendChild(createProjectMetaItem("Type", project.type));
+    projectMeta.appendChild(
+      createProjectMetaItem(KEII18n.t("card.field.type", lang), project.type),
+    );
   }
 
   const projectBadges = document.createElement("div");
@@ -973,7 +1421,7 @@ function createProjectCard(project) {
   }
 
   card.appendChild(checkbox);
-  card.appendChild(title);
+  card.appendChild(titleBtn);
   card.appendChild(projectMeta);
   card.appendChild(projectBadges);
   return card;
@@ -995,6 +1443,7 @@ function toggleProjectSelection(projectId) {
 }
 
 function toggleProjectSelectionFromCheckbox(checkbox) {
+  var lang = KEII18n.getLang();
   const projectId = getProjectIdFromCheckbox(checkbox);
   if (projectId === null) return;
   if (checkbox.checked) selectedProjects.add(projectId);
@@ -1005,28 +1454,39 @@ function toggleProjectSelectionFromCheckbox(checkbox) {
   }
   updateDownloadButtons();
 
-  const title = card ? card.querySelector(".project-title")?.textContent : "";
+  const titleEl = card ? card.querySelector(".project-title") : null;
+  const title = titleEl ? titleEl.textContent : "";
+  var key = checkbox.checked
+    ? "announce.project.selected"
+    : "announce.project.deselected";
   announceInteractionStatus(
-    `Project ${title || projectId} ${checkbox.checked ? "selected" : "deselected"}. ${selectedProjects.size} selected.`,
+    KEII18n.t(key, lang, {
+      title: title || projectId,
+      count: selectedProjects.size,
+    }),
   );
 }
 
 function selectAllProjects() {
+  var lang = KEII18n.getLang();
   filteredProjects.forEach((p) => {
     selectedProjects.add(p.id);
   });
   updateProjectCardStyles();
   updateDownloadButtons();
   announceInteractionStatus(
-    `Selected all ${filteredProjects.length} visible projects.`,
+    KEII18n.t("announce.select.all", lang, {
+      count: filteredProjects.length,
+    }),
   );
 }
 
 function clearProjectSelection() {
+  var lang = KEII18n.getLang();
   selectedProjects.clear();
   updateProjectCardStyles();
   updateDownloadButtons();
-  announceInteractionStatus("Cleared all selected projects.");
+  announceInteractionStatus(KEII18n.t("announce.select.cleared", lang));
 }
 
 function updateProjectCardStyles() {
@@ -1047,18 +1507,20 @@ function updateDownloadButtons() {
 }
 
 function clearSelection() {
+  var lang = KEII18n.getLang();
   selectedFields = [];
   selectedProjects.clear();
   updateFieldSelection();
   filterProjects();
   renderProjects();
-  announceInteractionStatus(
-    "Cleared all focus filters and project selections.",
-  );
+  announceInteractionStatus(KEII18n.t("announce.selection.cleared", lang));
 }
 
 function refreshData() {
-  setProjectsListState(createLoadingStateElement("Refreshing…"));
+  var lang = KEII18n.getLang();
+  setProjectsListState(
+    createLoadingStateElement(KEII18n.t("loading.refreshing", lang)),
+  );
   loadData();
 }
 
@@ -1073,6 +1535,7 @@ function showToast(message) {
 }
 
 function downloadExcel() {
+  var lang = KEII18n.getLang();
   if (selectedProjects.size === 0) return;
   try {
     const list = allProjects.filter((p) => selectedProjects.has(p.id));
@@ -1117,14 +1580,23 @@ function downloadExcel() {
     const fieldNames = selectedFields.map(
       (f) => fieldToOriginalMap.get(f) || f,
     );
+    const exportDate = new Date().toLocaleDateString(
+      lang === "ko" ? "ko-KR" : "en-US",
+    );
     const metaData = [
-      ["KEI Research Projects Export"],
-      [""],
-      ["Export Date:", new Date().toLocaleDateString("en-US")],
-      ["Total Projects:", list.length],
       [
-        "Selected Focus:",
-        fieldNames.length > 0 ? fieldNames.join(", ") : "All Fields",
+        KEII18n.t("export.institute", lang) +
+          " — " +
+          KEII18n.t("export.title", lang),
+      ],
+      [""],
+      [KEII18n.t("export.date.label", lang), exportDate],
+      [KEII18n.t("export.count.label", lang), list.length],
+      [
+        KEII18n.t("export.focus.label", lang),
+        fieldNames.length > 0
+          ? fieldNames.join(", ")
+          : KEII18n.t("export.all.fields", lang),
       ],
     ];
     const metaWs = XLSX.utils.aoa_to_sheet(metaData);
@@ -1133,14 +1605,15 @@ function downloadExcel() {
 
     const fname = `KEI_Projects_${new Date().toISOString().split("T")[0]}.xlsx`;
     XLSX.writeFile(wb, fname);
-    showToast(`Excel downloaded — ${list.length} projects`);
+    showToast(KEII18n.t("excel.downloading", lang, { count: list.length }));
   } catch (e) {
     console.error(e);
-    alert("Excel export failed. Please try again.");
+    showErrorToast(KEII18n.t("excel.failed", lang));
   }
 }
 
 function createPdfHeaderElement(projectCount) {
+  var lang = KEII18n.getLang();
   const headerHost = document.createElement("div");
   headerHost.style.cssText =
     "position:absolute;left:-9999px;top:0;width:540px;background:#fff;font-family:Inter,sans-serif;padding:10px";
@@ -1152,12 +1625,12 @@ function createPdfHeaderElement(projectCount) {
   const institute = document.createElement("div");
   institute.style.cssText =
     "color:#00A887;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px";
-  institute.textContent = "Korea Environment Institute";
+  institute.textContent = KEII18n.t("export.institute", lang);
 
   const title = document.createElement("div");
   title.style.cssText =
     "color:#2d3a40;font-size:20px;font-weight:700;margin-bottom:6px";
-  title.textContent = "Research Project Export";
+  title.textContent = KEII18n.t("export.title", lang);
 
   headerBox.appendChild(institute);
   headerBox.appendChild(title);
@@ -1168,13 +1641,15 @@ function createPdfHeaderElement(projectCount) {
     );
     const focus = document.createElement("div");
     focus.style.cssText = "color:#555;font-size:12px";
-    focus.textContent = `Focus: ${selectedFieldNames.join(", ")}`;
+    focus.textContent = KEII18n.t("export.focus.prefix", lang, {
+      fields: selectedFieldNames.join(", "),
+    });
     headerBox.appendChild(focus);
   }
 
   const exportMeta = document.createElement("div");
   exportMeta.style.cssText = "color:#888;font-size:11px;margin-top:4px";
-  exportMeta.textContent = `${new Date().toLocaleDateString("en-US")} · ${projectCount} Projects`;
+  exportMeta.textContent = `${new Date().toLocaleDateString(lang === "ko" ? "ko-KR" : "en-US")} · ${projectCount} ${KEII18n.t("stat.projects.label", lang)}`;
   headerBox.appendChild(exportMeta);
 
   headerHost.appendChild(headerBox);
@@ -1202,6 +1677,7 @@ function createPdfBadge(value, styles) {
 }
 
 function createPdfProjectCardElement(project) {
+  var lang = KEII18n.getLang();
   const cardHost = document.createElement("div");
   cardHost.style.cssText =
     "position:absolute;left:-9999px;top:0;width:540px;background:#fff;font-family:Inter,sans-serif";
@@ -1221,18 +1697,22 @@ function createPdfProjectCardElement(project) {
     "display:flex;gap:20px;font-size:11px;color:#555;margin-bottom:8px";
 
   if (project.pi) {
-    meta.appendChild(createPdfMetaItem("PI", project.pi));
+    meta.appendChild(
+      createPdfMetaItem(KEII18n.t("card.field.pi", lang), project.pi),
+    );
   }
   if (project.projectStart) {
     meta.appendChild(
       createPdfMetaItem(
-        "Period",
+        KEII18n.t("card.field.period", lang),
         `${project.projectStart} – ${project.projectEnd || ""}`,
       ),
     );
   }
   if (project.type) {
-    meta.appendChild(createPdfMetaItem("Type", project.type));
+    meta.appendChild(
+      createPdfMetaItem(KEII18n.t("card.field.type", lang), project.type),
+    );
   }
 
   card.appendChild(meta);
@@ -1263,11 +1743,10 @@ function createPdfProjectCardElement(project) {
 }
 
 async function downloadPDF() {
+  var lang = KEII18n.getLang();
   if (selectedProjects.size === 0) return;
   if (isPdfExportInProgress) {
-    showErrorToast(
-      "PDF export is already running. Please wait for completion.",
-    );
+    showErrorToast(KEII18n.t("pdf.busy", lang));
     return;
   }
 
@@ -1342,12 +1821,14 @@ async function downloadPDF() {
     }
 
     pdf.save(`KEI_Projects_${new Date().toISOString().split("T")[0]}.pdf`);
-    setPdfExportStatus(`PDF export complete (${list.length} projects)`, false);
-    showToast(`PDF downloaded — ${list.length} projects`);
+    setPdfExportStatus(
+      KEII18n.t("pdf.complete", lang, { count: list.length }),
+      false,
+    );
+    showToast(KEII18n.t("pdf.downloading", lang, { count: list.length }));
   } catch (e) {
     console.error(e);
-    const message =
-      e && e.message ? e.message : "PDF export failed. Please try again.";
+    const message = e && e.message ? e.message : KEII18n.t("pdf.busy", lang);
     setPdfExportStatus(message, true);
     showErrorToast(message);
   } finally {
@@ -1358,8 +1839,7 @@ async function downloadPDF() {
 
 function updateLastUpdateTime(ts) {
   const d = ts ? new Date(ts) : new Date();
-  document.getElementById("lastUpdate").textContent =
-    d.toLocaleDateString("en-US");
+  document.getElementById("lastUpdate").textContent = localizedDate(d);
 }
 
 function getFocusableInteractiveElements() {
@@ -1381,6 +1861,12 @@ function getFocusableInteractiveElements() {
 
 function maintainTabCycle(event) {
   if (event.key !== "Tab") {
+    return;
+  }
+
+  // If modal is open, let modal focus trap handle it
+  var modal = document.getElementById("projectModal");
+  if (modal && !modal.hidden) {
     return;
   }
 
@@ -1436,6 +1922,400 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+// ─── F2: Modal ────────────────────────────────────────────────────────────────
+
+function formatDuration(startTs, endTs, lang) {
+  if (!Number.isFinite(startTs) || !Number.isFinite(endTs)) return "";
+  var startDate = new Date(startTs);
+  var endDate = new Date(endTs);
+  var totalMonths =
+    (endDate.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
+    (endDate.getUTCMonth() - startDate.getUTCMonth());
+  if (totalMonths < 0) totalMonths = 0;
+  var years = Math.floor(totalMonths / 12);
+  var months = totalMonths % 12;
+  if (lang === "ko") {
+    var parts = [];
+    if (years > 0) parts.push(years + "년");
+    if (months > 0) parts.push(months + "개월");
+    return parts.length > 0 ? parts.join(" ") : "0개월";
+  }
+  var enParts = [];
+  if (years > 0) enParts.push(years + (years === 1 ? " year" : " years"));
+  if (months > 0) enParts.push(months + (months === 1 ? " month" : " months"));
+  return enParts.length > 0 ? enParts.join(" ") : "0 months";
+}
+
+// F2 attachments: only allow http/https absolute URLs and same-origin
+// relative paths under data/. Anything else (javascript:, data:, file://)
+// is dropped so the link is rendered hidden — the modal still opens.
+function isSafeAttachmentHref(value) {
+  if (!value || typeof value !== "string") return false;
+  var trimmed = value.trim();
+  if (!trimmed) return false;
+  if (/^https?:\/\//i.test(trimmed)) return true;
+  if (/^data\//.test(trimmed) || /^\.?\/?data\//.test(trimmed)) return true;
+  return false;
+}
+
+function applyProjectAttachments(project) {
+  var wrap = document.getElementById("projectModalAttachments");
+  var thumbAnchor = document.getElementById("projectModalThumbLink");
+  var thumbImg = document.getElementById("projectModalThumb");
+  var pdfLink = document.getElementById("projectModalPdfLink");
+  var sourceLink = document.getElementById("projectModalSourceLink");
+  if (!wrap || !thumbAnchor || !thumbImg || !pdfLink || !sourceLink) return;
+
+  var thumb = isSafeAttachmentHref(project.thumbnail) ? project.thumbnail : "";
+  var pdf = isSafeAttachmentHref(project.pdfPath) ? project.pdfPath : "";
+  var source = isSafeAttachmentHref(project.sourceUrl) ? project.sourceUrl : "";
+
+  if (thumb) {
+    thumbImg.src = thumb;
+    thumbImg.alt = project.title || "";
+    // Clicking the thumbnail prefers PDF then original, falling back to the
+    // image itself so it always does something useful.
+    thumbAnchor.href = pdf || source || thumb;
+    thumbAnchor.hidden = false;
+  } else {
+    thumbImg.removeAttribute("src");
+    thumbImg.alt = "";
+    thumbAnchor.removeAttribute("href");
+    thumbAnchor.hidden = true;
+  }
+
+  if (pdf) {
+    pdfLink.href = pdf;
+    pdfLink.hidden = false;
+  } else {
+    pdfLink.removeAttribute("href");
+    pdfLink.hidden = true;
+  }
+
+  if (source) {
+    sourceLink.href = source;
+    sourceLink.hidden = false;
+  } else {
+    sourceLink.removeAttribute("href");
+    sourceLink.hidden = true;
+  }
+
+  wrap.hidden = !(thumb || pdf || source);
+}
+
+// skipHashUpdate=true when called from popstate to avoid double-pushing history
+function openProjectModal(projectId, skipHashUpdate) {
+  var project = allProjects.find(function (p) {
+    return p.id === projectId;
+  });
+  var lang = KEII18n.getLang();
+  if (!project) {
+    showErrorToast(KEII18n.t("modal.notFound", lang));
+    return;
+  }
+
+  currentModalProjectId = projectId;
+  lastFocusBeforeModal = document.activeElement;
+
+  var modal = document.getElementById("projectModal");
+  document.getElementById("projectModalType").textContent = project.type || "";
+  document.getElementById("projectModalTitle").textContent =
+    project.title || "";
+  document.getElementById("projectModalPi").textContent = project.pi || "";
+
+  var periodText = "";
+  if (project.projectStartTimestamp || project.projectEndTimestamp) {
+    var startStr = Number.isFinite(project.projectStartTimestamp)
+      ? localizedDate(project.projectStartTimestamp)
+      : "";
+    var endStr = Number.isFinite(project.projectEndTimestamp)
+      ? localizedDate(project.projectEndTimestamp)
+      : "";
+    periodText =
+      startStr && endStr ? startStr + " – " + endStr : startStr || endStr;
+  }
+  document.getElementById("projectModalPeriod").textContent = periodText;
+
+  var durationText = "";
+  if (
+    Number.isFinite(project.projectStartTimestamp) &&
+    Number.isFinite(project.projectEndTimestamp)
+  ) {
+    durationText = formatDuration(
+      project.projectStartTimestamp,
+      project.projectEndTimestamp,
+      lang,
+    );
+  }
+  document.getElementById("projectModalDuration").textContent = durationText;
+
+  document.getElementById("projectModalPrimary").textContent =
+    project.primaryFocus || "";
+  document.getElementById("projectModalSecondary").textContent =
+    project.secondaryFocus || "";
+
+  applyProjectAttachments(project);
+
+  modal.hidden = false;
+
+  // F2: Update URL hash to reflect open modal
+  if (!skipHashUpdate) {
+    var encodedId = encodeProjectId(projectId);
+    history.replaceState(
+      null,
+      "",
+      window.location.pathname +
+        window.location.search +
+        "#project=" +
+        encodedId,
+    );
+  }
+
+  var card = modal.querySelector(".project-modal-card");
+  if (card) {
+    card.focus();
+  }
+}
+
+// skipHashUpdate=true when called from popstate
+function closeProjectModal(skipHashUpdate) {
+  var modal = document.getElementById("projectModal");
+  if (!modal) return;
+
+  // Restore focus BEFORE hiding the modal so the card (display:none parent)
+  // does not auto-blur the activeElement to body before focus() lands.
+  if (lastFocusBeforeModal && document.body.contains(lastFocusBeforeModal)) {
+    lastFocusBeforeModal.focus();
+  }
+
+  modal.hidden = true;
+  currentModalProjectId = null;
+
+  // F2: Clear hash when modal closes
+  if (!skipHashUpdate) {
+    history.replaceState(
+      null,
+      "",
+      window.location.pathname + window.location.search,
+    );
+  }
+
+  lastFocusBeforeModal = null;
+}
+
+// F2: Clipboard helper — tries navigator.clipboard, falls back to execCommand
+function writeToClipboard(text) {
+  if (
+    navigator.clipboard &&
+    typeof navigator.clipboard.writeText === "function"
+  ) {
+    return navigator.clipboard.writeText(text);
+  }
+  // Fallback: textarea + execCommand
+  return new Promise(function (resolve, reject) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.cssText = "position:fixed;left:-9999px;top:-9999px;opacity:0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    var ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch (e) {
+      // ignore
+    }
+    document.body.removeChild(ta);
+    if (ok) {
+      resolve();
+    } else {
+      reject(new Error("execCommand copy failed"));
+    }
+  });
+}
+
+// F2: Copy project deep-link to clipboard
+function copyProjectLink(projectId) {
+  var lang = KEII18n.getLang();
+  var encodedId = encodeProjectId(projectId);
+  var url = location.origin + location.pathname + "#project=" + encodedId;
+  writeToClipboard(url)
+    .then(function () {
+      var msg = KEII18n.t("modal.copyLink.success", lang);
+      showToast(msg);
+      announceInteractionStatus(msg);
+    })
+    .catch(function () {
+      showErrorToast(KEII18n.t("modal.copyLink.fail", lang));
+    });
+}
+
+// F2: Copy localized project citation to clipboard
+function copyProjectCitation(projectId) {
+  var lang = KEII18n.getLang();
+  var project = allProjects.find(function (p) {
+    return p.id === projectId;
+  });
+  if (!project) {
+    showErrorToast(KEII18n.t("modal.notFound", lang));
+    return;
+  }
+
+  var unknownYear = KEII18n.t("modal.citation.unknownYear", lang);
+  var startYear = Number.isFinite(project.projectStartTimestamp)
+    ? String(new Date(project.projectStartTimestamp).getUTCFullYear())
+    : null;
+  var endYear = Number.isFinite(project.projectEndTimestamp)
+    ? String(new Date(project.projectEndTimestamp).getUTCFullYear())
+    : null;
+
+  if (!startYear && !endYear) {
+    startYear = unknownYear;
+    endYear = unknownYear;
+  } else if (!startYear) {
+    startYear = endYear;
+  } else if (!endYear) {
+    endYear = startYear;
+  }
+
+  var citation = KEII18n.t("modal.citation.template", lang, {
+    pi: project.pi || "",
+    startYear: startYear,
+    endYear: endYear,
+    title: project.title || "",
+    id: String(projectId),
+  });
+
+  writeToClipboard(citation)
+    .then(function () {
+      var msg = KEII18n.t("modal.copyCitation.success", lang);
+      showToast(msg);
+      announceInteractionStatus(msg);
+    })
+    .catch(function () {
+      showErrorToast(KEII18n.t("modal.copyCitation.fail", lang));
+    });
+}
+
+// ─── F3: Facets ───────────────────────────────────────────────────────────────
+
+function deriveFacets(projects) {
+  var typeSet = {};
+  var yearSet = {};
+
+  projects.forEach(function (p) {
+    if (p.type) {
+      typeSet[p.type] = (typeSet[p.type] || 0) + 1;
+    }
+    var ts = Number.isFinite(p.projectStartTimestamp)
+      ? p.projectStartTimestamp
+      : Number.isFinite(p.projectEndTimestamp)
+        ? p.projectEndTimestamp
+        : null;
+    if (ts !== null) {
+      var yr = String(new Date(ts).getUTCFullYear());
+      yearSet[yr] = (yearSet[yr] || 0) + 1;
+    }
+  });
+
+  var types = Object.keys(typeSet).sort();
+  var years = Object.keys(yearSet).sort(function (a, b) {
+    return Number(b) - Number(a);
+  });
+
+  return {
+    types: types.map(function (v) {
+      return { value: v };
+    }),
+    years: years.map(function (v) {
+      return { value: v };
+    }),
+  };
+}
+
+function renderFacetChips() {
+  var facets = deriveFacets(allProjects);
+  var lang = KEII18n.getLang();
+
+  var typeContainer = document.getElementById("facetTypeChips");
+  var yearContainer = document.getElementById("facetYearChips");
+
+  if (!typeContainer || !yearContainer) return;
+
+  typeContainer.replaceChildren();
+  yearContainer.replaceChildren();
+
+  facets.types.forEach(function (item) {
+    var translatedLabel =
+      KEII18n.t("facet.type.value." + item.value, lang) !==
+      "facet.type.value." + item.value
+        ? KEII18n.t("facet.type.value." + item.value, lang)
+        : item.value;
+    var count = computeFacetCount("type", item.value);
+    var chip = createFacetChip(
+      "type",
+      item.value,
+      translatedLabel,
+      count,
+      selectedTypes.has(item.value),
+    );
+    typeContainer.appendChild(chip);
+  });
+
+  facets.years.forEach(function (item) {
+    var count = computeFacetCount("year", item.value);
+    var chip = createFacetChip(
+      "year",
+      item.value,
+      item.value,
+      count,
+      selectedYears.has(item.value),
+    );
+    yearContainer.appendChild(chip);
+  });
+}
+
+function createFacetChip(facetType, value, label, count, isPressed) {
+  var btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "facet-chip";
+  btn.setAttribute("data-facet-type", facetType);
+  btn.setAttribute("data-facet-value", value);
+  btn.setAttribute("aria-pressed", isPressed ? "true" : "false");
+
+  var labelNode = document.createTextNode(label + " ");
+  var countSpan = document.createElement("span");
+  countSpan.className = "facet-count";
+  countSpan.textContent = "(" + count + ")";
+
+  btn.appendChild(labelNode);
+  btn.appendChild(countSpan);
+
+  btn.addEventListener("click", function () {
+    var lang = KEII18n.getLang();
+    var wasSelected;
+    if (facetType === "type") {
+      wasSelected = selectedTypes.has(value);
+      if (wasSelected) selectedTypes.delete(value);
+      else selectedTypes.add(value);
+    } else {
+      wasSelected = selectedYears.has(value);
+      if (wasSelected) selectedYears.delete(value);
+      else selectedYears.add(value);
+    }
+    filterProjects();
+    renderProjects();
+    renderFacetChips();
+    syncUrlParams();
+    var announceKey = wasSelected
+      ? "facet.announce.removed"
+      : "facet.announce.added";
+    announceInteractionStatus(KEII18n.t(announceKey, lang, { value: label }));
+  });
+
+  return btn;
+}
+
 window.clearSelection = clearSelection;
 window.applySortAndRender = applySortAndRender;
 window.selectAllProjects = selectAllProjects;
@@ -1448,3 +2328,5 @@ window.toggleProjectSelection = toggleProjectSelection;
 window.toggleProjectSelectionFromCheckbox = toggleProjectSelectionFromCheckbox;
 window.toggleField = toggleField;
 window.getFilterStateSnapshot = getFilterStateSnapshot;
+window.openProjectModal = openProjectModal;
+window.closeProjectModal = closeProjectModal;

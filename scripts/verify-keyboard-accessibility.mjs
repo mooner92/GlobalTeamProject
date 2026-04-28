@@ -173,7 +173,7 @@ async function run() {
     const reachedPdfButton = await tabUntil(
       page,
       () => page.evaluate(() => document.activeElement?.id === "downloadBtn"),
-      12,
+      60,
       "backward",
     );
     if (!reachedPdfButton) {
@@ -235,7 +235,9 @@ async function run() {
     const cycle = [];
     let returnedToStart = false;
 
-    for (let i = 0; i < 180; i += 1) {
+    // Budget must exceed total tabbable count: header + facet chips +
+    // toolbar + (per-project: title button + checkbox) for the full dataset.
+    for (let i = 0; i < 1500; i += 1) {
       await page.keyboard.press("Tab");
       const descriptor = await getActiveDescriptor(page);
       cycle.push(descriptor);

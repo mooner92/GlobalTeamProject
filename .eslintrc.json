@@ -16,7 +16,16 @@
       "globals": {
         "XLSX": "readonly",
         "html2canvas": "readonly",
-        "jspdf": "readonly"
+        "jspdf": "readonly",
+        "KEII18n": "readonly"
+      }
+    },
+    {
+      "files": ["scripts/i18n/dict.js"],
+      "env": {
+        "browser": true,
+        "node": true,
+        "es2022": true
       }
     },
     {

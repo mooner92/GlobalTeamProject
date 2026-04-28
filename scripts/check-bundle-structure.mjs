@@ -16,6 +16,7 @@ const requiredAssets = [
   "styles/main.css",
   "scripts/data/contract.js",
   "scripts/app.js",
+  "scripts/i18n/dict.js",
 ];
 for (const asset of requiredAssets) {
   if (!existsSync(asset)) {
