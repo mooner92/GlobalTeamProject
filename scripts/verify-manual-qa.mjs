@@ -130,7 +130,10 @@ async function run() {
     }));
 
     await page.click(".field-card");
-    await page.fill("#projectSearchInput", "Project");
+    // Use a search term that is broadly present across project titles so the
+    // filter never empties out for any single focus area in the dataset.
+    // "Project"/etc. were too sparse once the focus list was deduplicated.
+    await page.fill("#projectSearchInput", "environment");
     await page.fill("#projectDateStart", "2024-01-01");
     await page.fill("#projectDateEnd", "2025-12-31");
     await page.waitForTimeout(250);

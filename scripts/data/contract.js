@@ -30,9 +30,29 @@
       header: "Project End",
       aliases: ["project end", "end"],
     },
+    {
+      key: "thumbnail",
+      header: "Thumbnail",
+      aliases: ["thumbnail", "thumb"],
+      optional: true,
+    },
+    {
+      key: "pdfPath",
+      header: "PDF",
+      aliases: ["pdf", "pdf path"],
+      optional: true,
+    },
+    {
+      key: "sourceUrl",
+      header: "Link",
+      aliases: ["link", "url", "source link", "source url"],
+      optional: true,
+    },
   ];
 
-  const REQUIRED_HEADERS = CONTRACT_FIELDS.map(function (field) {
+  const REQUIRED_HEADERS = CONTRACT_FIELDS.filter(function (field) {
+    return !field.optional;
+  }).map(function (field) {
     return field.header;
   });
 
@@ -77,6 +97,17 @@
       return "";
     }
     return String(value).trim();
+  }
+
+  // Focus columns occasionally hold a literal 0 returned by upstream
+  // spreadsheet formulas. Treat 0 / "0" as empty so they never seed a
+  // bogus "0" focus area in the UI.
+  function normalizeFocusValue(value) {
+    if (value === null || value === undefined) return "";
+    if (value === 0) return "";
+    const trimmed = String(value).trim();
+    if (trimmed === "" || trimmed === "0") return "";
+    return trimmed;
   }
 
   function padDatePart(value) {
@@ -217,7 +248,7 @@
     CONTRACT_FIELDS.forEach(function (field) {
       const index = resolveColumnIndex(headers, field);
       if (index === -1) {
-        missingHeaders.push(field.header);
+        if (!field.optional) missingHeaders.push(field.header);
         return;
       }
       map[field.key] = index;
@@ -343,8 +374,8 @@
           return null;
         }
 
-        const primaryFocus = normalizeDisplayValue(row[columnMap.primaryFocus]);
-        const secondaryFocus = normalizeDisplayValue(
+        const primaryFocus = normalizeFocusValue(row[columnMap.primaryFocus]);
+        const secondaryFocus = normalizeFocusValue(
           row[columnMap.secondaryFocus],
         );
         const rawId = row[columnMap.id];
@@ -354,6 +385,19 @@
         const projectEndDate = parseDeterministicDateValue(
           row[columnMap.projectEnd],
         );
+
+        const thumbnail =
+          columnMap.thumbnail !== undefined
+            ? normalizeDisplayValue(row[columnMap.thumbnail])
+            : "";
+        const pdfPath =
+          columnMap.pdfPath !== undefined
+            ? normalizeDisplayValue(row[columnMap.pdfPath])
+            : "";
+        const sourceUrl =
+          columnMap.sourceUrl !== undefined
+            ? normalizeDisplayValue(row[columnMap.sourceUrl])
+            : "";
 
         return {
           id: rawId || index + 1,
@@ -371,6 +415,9 @@
           projectEndSortableKey: projectEndDate.sortableKey,
           primaryFocusKey: normalizeFieldKey(primaryFocus),
           secondaryFocusKey: normalizeFieldKey(secondaryFocus),
+          thumbnail: thumbnail,
+          pdfPath: pdfPath,
+          sourceUrl: sourceUrl,
         };
       })
       .filter(function (project) {
