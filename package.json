@@ -15,7 +15,7 @@
     "format": "prettier --write \".github/workflows/**/*.yml\" \"package.json\" \"playwright.config.js\" \"scripts/**/*.mjs\" \"tests/**/*.js\"",
     "format:check": "prettier --check \".github/workflows/**/*.yml\" \"package.json\" \"playwright.config.js\" \"scripts/**/*.mjs\" \"tests/**/*.js\"",
     "test:smoke": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers playwright test tests/e2e/baseline.spec.js --grep @smoke",
-    "test:e2e:playwright": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers playwright test tests/e2e/baseline.spec.js",
+    "test:e2e:playwright": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers playwright test tests/e2e/baseline.spec.js tests/e2e/i18n.spec.js tests/e2e/facets.spec.js tests/e2e/project-detail.spec.js tests/e2e/contract.spec.js tests/e2e/thumbnails.spec.js",
     "test:e2e:failure-evidence": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers playwright test tests/e2e/failure-evidence.spec.js",
     "test:e2e": "npm run test:e2e:playwright && npm run verify:export && npm run verify:keyboard && npm run verify:search-date",
     "validate:data": "node scripts/validate-data.mjs",
