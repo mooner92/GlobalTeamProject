@@ -1,7 +1,7 @@
 const { test, expect } = require("playwright/test");
 
 async function waitForAppReady(page) {
-  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => typeof window.getFilterStateSnapshot === "function",
   );
@@ -93,7 +93,7 @@ test("localStorage persistence: reload after toggle stays in KO", async ({
   );
 
   // Reload without any ?lang= param
-  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => typeof window.getFilterStateSnapshot === "function",
   );
@@ -111,10 +111,12 @@ test("URL override ?lang=ko starts in Korean despite empty storage", async ({
   page,
 }) => {
   // Clear storage first
-  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html", { waitUntil: "domcontentloaded" });
   await page.evaluate(() => localStorage.removeItem("kei.lang"));
 
-  await page.goto("/index.html?lang=ko", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html?lang=ko", {
+    waitUntil: "domcontentloaded",
+  });
   await page.waitForFunction(
     () => typeof window.getFilterStateSnapshot === "function",
   );
@@ -130,10 +132,12 @@ test("URL override ?lang=ko starts in Korean despite empty storage", async ({
 
 test("URL override ?lang=en overrides stored ko", async ({ page }) => {
   // Store ko first
-  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html", { waitUntil: "domcontentloaded" });
   await page.evaluate(() => localStorage.setItem("kei.lang", "ko"));
 
-  await page.goto("/index.html?lang=en", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html?lang=en", {
+    waitUntil: "domcontentloaded",
+  });
   await page.waitForFunction(
     () => typeof window.getFilterStateSnapshot === "function",
   );

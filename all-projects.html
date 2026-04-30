@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KEI Research Project Explorer — Full Catalog</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="logo-area">
+          <a href="index.html" aria-label="Back to KEI Global Gateway">
+            <img
+              src="data/CI_logos/KEI_English_1.jpg"
+              alt="KEI Korea Environment Institute"
+            />
+          </a>
+        </div>
+        <div class="header-nav-title" data-i18n="header.title">
+          Research Project Explorer
+        </div>
+        <a class="legacy-back-link" href="index.html"
+          >← <span data-i18n="legacy.back">Back to gateway</span></a
+        >
+        <button
+          id="langToggle"
+          type="button"
+          class="lang-toggle"
+          aria-pressed="false"
+          data-i18n-attr="aria-label"
+          data-i18n-aria-label="header.toggle.aria"
+        >
+          <span data-i18n="header.toggle.label">한국어</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero-section">
+      <h1 data-i18n="hero.headline">Explore KEI's Research Portfolio</h1>
+      <p data-i18n="hero.description">
+        Browse research projects by focus area and discover how KEI is advancing
+        environmental policy in Korea and beyond.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number" id="totalProjectsCount">—</span>
+          <span class="stat-label" data-i18n="stat.projects.label"
+            >Research Projects</span
+          >
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number" id="totalFieldsCount">—</span>
+          <span class="stat-label" data-i18n="stat.areas.label"
+            >Research Areas</span
+          >
+        </div>
+      </div>
+    </section>
+
+    <div class="main-container">
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title" data-i18n="focus.panel.title">
+            Research Focus Areas
+          </h2>
+          <button
+            type="button"
+            class="btn-text"
+            onclick="clearSelection()"
+            data-i18n="focus.clear.label"
+          >
+            Clear Selection
+          </button>
+        </div>
+
+        <div
+          class="research-fields-grid"
+          id="researchFieldsGrid"
+          role="group"
+          aria-label="Research focus areas"
+        ></div>
+
+        <div class="selection-summary hide" id="selectionSummary">
+          <div class="selection-summary-label">
+            Filtering by <span id="selectedCount">0</span>
+            <span data-i18n="focus.summary.filtering">area(s)</span>
+          </div>
+          <div class="selected-fields-row" id="selectedFields"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="results-panel-header">
+          <div
+            class="results-info"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <span data-i18n="results.info.showing">Showing</span>
+            <span id="resultsCount">—</span>
+          </div>
+          <div class="results-controls">
+            <label class="visually-hidden" for="projectSearchInput">
+              <span data-i18n="search.label"
+                >Search by project title or PI</span
+              >
+            </label>
+            <input
+              type="search"
+              class="filter-input search-filter-input"
+              id="projectSearchInput"
+              placeholder="Search title or PI"
+              autocomplete="off"
+              aria-label="Search by project title or PI"
+              data-i18n-attr="aria-label"
+              data-i18n-aria-label="search.aria"
+              data-i18n-placeholder="search.placeholder"
+            />
+            <div
+              class="date-filter-controls"
+              role="group"
+              aria-label="Project date range filter"
+              data-i18n-attr="aria-label"
+              data-i18n-aria-label="date.group.aria"
+            >
+              <label class="visually-hidden" for="projectDateStart">
+                <span data-i18n="date.start.label">Project date start</span>
+              </label>
+              <input
+                type="date"
+                class="filter-input date-filter-input"
+                id="projectDateStart"
+                lang="en"
+                aria-label="Project date start"
+                data-i18n-attr="aria-label"
+                data-i18n-aria-label="date.start.aria"
+              />
+              <span
+                class="date-filter-separator"
+                aria-hidden="true"
+                data-i18n="date.separator"
+                >to</span
+              >
+              <label class="visually-hidden" for="projectDateEnd">
+                <span data-i18n="date.end.label">Project date end</span>
+              </label>
+              <input
+                type="date"
+                class="filter-input date-filter-input"
+                id="projectDateEnd"
+                lang="en"
+                aria-label="Project date end"
+                data-i18n-attr="aria-label"
+                data-i18n-aria-label="date.end.aria"
+              />
+            </div>
+            <label class="visually-hidden" for="sortSelect">
+              <span data-i18n="sort.label">Sort projects</span>
+            </label>
+            <select
+              class="sort-select"
+              id="sortSelect"
+              onchange="applySortAndRender()"
+              aria-label="Sort projects"
+              data-i18n-attr="aria-label"
+              data-i18n-aria-label="sort.aria"
+            >
+              <option value="default" data-i18n="sort.option.default">
+                Default Order
+              </option>
+              <option value="title_asc" data-i18n="sort.option.title_asc">
+                Title (A → Z)
+              </option>
+              <option value="start_desc" data-i18n="sort.option.start_desc">
+                Newest First
+              </option>
+              <option value="start_asc" data-i18n="sort.option.start_asc">
+                Oldest First
+              </option>
+            </select>
+            <button
+              type="button"
+              class="btn btn-outline"
+              onclick="selectAllProjects()"
+              id="selectAllBtn"
+              data-i18n="btn.selectAll"
+            >
+              Select All
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline"
+              onclick="clearProjectSelection()"
+              id="clearProjectBtn"
+              data-i18n="btn.deselectAll"
+            >
+              Deselect All
+            </button>
+            <button
+              type="button"
+              class="btn btn-excel"
+              onclick="downloadExcel()"
+              id="downloadExcelBtn"
+              disabled
+            >
+              <span data-i18n="btn.excel">↓ Excel</span>
+              (<span id="selectedProjectCount">0</span>)
+            </button>
+            <button
+              type="button"
+              class="btn btn-pdf"
+              onclick="downloadPDF()"
+              id="downloadBtn"
+              disabled
+            >
+              <span data-i18n="btn.pdf">↓ PDF</span>
+              (<span id="selectedProjectCountPDF">0</span>)
+            </button>
+            <button
+              type="button"
+              class="btn btn-refresh"
+              onclick="refreshData()"
+              title="Refresh data"
+              aria-label="Refresh project data"
+              data-i18n-attr="aria-label"
+              data-i18n-aria-label="btn.refresh.aria"
+              data-i18n-title="btn.refresh.title"
+            >
+              <span data-i18n="btn.refresh">↺</span>
+            </button>
+            <button
+              id="resetFiltersBtn"
+              type="button"
+              class="reset-filters"
+              data-i18n="facet.reset"
+            >
+              Reset
+            </button>
+            <span
+              class="export-status"
+              id="pdfExportStatus"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            ></span>
+            <span
+              class="filter-feedback"
+              id="dateRangeFeedback"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            ></span>
+          </div>
+        </div>
+
+        <div class="facet-rows">
+          <div
+            class="facet-row"
+            data-facet-row="type"
+            role="group"
+            aria-label="Filter by project type"
+            data-i18n-attr="aria-label"
+            data-i18n-aria-label="facet.type.aria"
+          >
+            <span class="facet-label" data-i18n="facet.type.label">Type</span>
+            <div class="facet-chips" id="facetTypeChips"></div>
+          </div>
+          <div
+            class="facet-row"
+            data-facet-row="year"
+            role="group"
+            aria-label="Filter by project year"
+            data-i18n-attr="aria-label"
+            data-i18n-aria-label="facet.year.aria"
+          >
+            <span class="facet-label" data-i18n="facet.year.label">Year</span>
+            <div class="facet-chips" id="facetYearChips"></div>
+          </div>
+        </div>
+
+        <div id="projectsList">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading project data…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div data-i18n="footer.copyright">
+          &copy; Korea Environment Institute. All rights reserved.
+        </div>
+        <div
+          class="footer-status"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <span>
+            <span class="status-dot"></span>
+            <span data-i18n="footer.status.label">Status:</span>
+            <span id="serverStatus">Checking…</span>
+          </span>
+          <span>
+            <span data-i18n="footer.data.label">Data:</span>
+            <span id="dataFile">—</span>
+          </span>
+          <span>
+            <span data-i18n="footer.updated.label">Updated:</span>
+            <span id="lastUpdate">—</span>
+          </span>
+        </div>
+      </div>
+    </footer>
+
+    <div
+      id="interactionStatus"
+      class="visually-hidden"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+
+    <div
+      id="projectModal"
+      class="project-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="projectModalTitle"
+      hidden
+    >
+      <div class="project-modal-backdrop" data-modal-close></div>
+      <div class="project-modal-card" tabindex="-1">
+        <header class="project-modal-header">
+          <span class="project-modal-type" id="projectModalType"></span>
+          <button
+            type="button"
+            class="project-modal-close"
+            data-modal-close
+            aria-label="Close modal"
+            data-i18n-attr="aria-label"
+            data-i18n-aria-label="modal.close.aria"
+          >
+            &times;
+          </button>
+        </header>
+        <h2 id="projectModalTitle" class="project-modal-title"></h2>
+        <dl class="project-modal-meta">
+          <div>
+            <dt data-i18n="modal.field.pi">PI</dt>
+            <dd id="projectModalPi"></dd>
+          </div>
+          <div>
+            <dt data-i18n="modal.field.period">Period</dt>
+            <dd id="projectModalPeriod"></dd>
+          </div>
+          <div>
+            <dt data-i18n="modal.field.duration">Duration</dt>
+            <dd id="projectModalDuration"></dd>
+          </div>
+          <div>
+            <dt data-i18n="modal.field.primaryFocus">Primary Focus</dt>
+            <dd id="projectModalPrimary"></dd>
+          </div>
+          <div>
+            <dt data-i18n="modal.field.secondaryFocus">Secondary Focus</dt>
+            <dd id="projectModalSecondary"></dd>
+          </div>
+        </dl>
+        <div
+          class="project-modal-attachments"
+          id="projectModalAttachments"
+          hidden
+        >
+          <a
+            id="projectModalThumbLink"
+            class="project-modal-thumb"
+            target="_blank"
+            rel="noopener"
+            data-i18n-attr="aria-label"
+            data-i18n-aria-label="modal.attachment.thumbnail.aria"
+            hidden
+          >
+            <img id="projectModalThumb" alt="" />
+          </a>
+          <div class="project-modal-attachment-buttons">
+            <a
+              id="projectModalPdfLink"
+              class="modal-action modal-action-link"
+              target="_blank"
+              rel="noopener"
+              data-i18n="modal.action.openPdf"
+              hidden
+              >Open PDF</a
+            >
+            <a
+              id="projectModalSourceLink"
+              class="modal-action modal-action-link"
+              target="_blank"
+              rel="noopener"
+              data-i18n="modal.action.openSource"
+              hidden
+              >Open original</a
+            >
+          </div>
+        </div>
+        <footer class="project-modal-actions">
+          <button
+            type="button"
+            id="projectModalCopyLink"
+            class="modal-action"
+            data-i18n="modal.action.copyLink"
+          >
+            Copy link
+          </button>
+          <button
+            type="button"
+            id="projectModalCopyCite"
+            class="modal-action"
+            data-i18n="modal.action.copyCitation"
+          >
+            Copy citation
+          </button>
+          <button
+            type="button"
+            data-modal-close
+            class="modal-action modal-action-secondary"
+            data-i18n="modal.action.close"
+          >
+            Close
+          </button>
+        </footer>
+      </div>
+    </div>
+
+    <script src="scripts/data/contract.js"></script>
+    <script src="scripts/i18n/dict.js"></script>
+    <script src="scripts/app.js"></script>
+  </body>
+</html>

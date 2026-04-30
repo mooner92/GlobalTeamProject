@@ -1,7 +1,7 @@
 const { test, expect } = require("playwright/test");
 
 async function waitForCards(page) {
-  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => document.querySelectorAll(".project-card").length > 0,
   );

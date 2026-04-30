@@ -1,7 +1,7 @@
 const { test, expect } = require("playwright/test");
 
 async function waitForAppReady(page) {
-  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => typeof window.getFilterStateSnapshot === "function",
   );
@@ -252,7 +252,9 @@ test("reload restore: selected type+year chips survive page reload", async ({
 });
 
 test("?lang=ko is preserved in URL after facet changes", async ({ page }) => {
-  await page.goto("/index.html?lang=ko", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html?lang=ko", {
+    waitUntil: "domcontentloaded",
+  });
   await page.waitForFunction(
     () => typeof window.getFilterStateSnapshot === "function",
   );

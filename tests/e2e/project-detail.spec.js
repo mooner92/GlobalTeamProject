@@ -1,7 +1,7 @@
 const { test, expect } = require("playwright/test");
 
 async function waitForAppReady(page) {
-  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => typeof window.getFilterStateSnapshot === "function",
   );
@@ -172,7 +172,7 @@ test("deep link: #project=<encodedId> auto-opens modal on page load @smoke", asy
   const encoded = encodeProjectId(projectId);
 
   // Navigate with hash
-  await page.goto(`/index.html#project=${encoded}`, {
+  await page.goto(`/all-projects.html#project=${encoded}`, {
     waitUntil: "domcontentloaded",
   });
   await page.waitForFunction(
@@ -191,7 +191,7 @@ test("deep link: #project=<encodedId> auto-opens modal on page load @smoke", asy
 test("deep link with bad id shows error toast and clears hash", async ({
   page,
 }) => {
-  await page.goto("/index.html#project=%22nonexistent%22", {
+  await page.goto("/all-projects.html#project=%22nonexistent%22", {
     waitUntil: "domcontentloaded",
   });
   await page.waitForFunction(
@@ -312,7 +312,9 @@ test("copy citation in KO lang includes Korean institute phrase", async ({
     });
   });
 
-  await page.goto("/index.html?lang=ko", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html?lang=ko", {
+    waitUntil: "domcontentloaded",
+  });
   await page.waitForFunction(
     () => typeof window.getFilterStateSnapshot === "function",
   );

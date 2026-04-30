@@ -3,7 +3,7 @@ const { test, expect } = require("playwright/test");
 test("intentional failure captures screenshot and trace evidence", async ({
   page,
 }) => {
-  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.goto("/all-projects.html", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => {
     const text = document.getElementById("resultsCount")?.textContent ?? "";
     const count = Number.parseInt(text, 10);
