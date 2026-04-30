@@ -1420,10 +1420,43 @@ function createProjectCard(project) {
     );
   }
 
-  card.appendChild(checkbox);
-  card.appendChild(titleBtn);
-  card.appendChild(projectMeta);
-  card.appendChild(projectBadges);
+  const cover = document.createElement("div");
+  cover.className = "project-card-cover";
+
+  const coverSrc = resolveCoverImage(project);
+  if (coverSrc) {
+    const img = document.createElement("img");
+    img.className = "cover-img";
+    img.src = coverSrc;
+    img.alt = project.title || "";
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.addEventListener("error", function () {
+      img.replaceWith(createPlaceholderCover(project));
+    });
+    cover.appendChild(img);
+  } else {
+    cover.appendChild(createPlaceholderCover(project));
+  }
+
+  if (project.source) {
+    const badge = document.createElement("span");
+    badge.className = "cover-source-badge";
+    const normalizedSource = String(project.source).trim().toLowerCase();
+    badge.textContent =
+      normalizedSource === "elibrary" ? "E-Library" : "Research";
+    cover.appendChild(badge);
+  }
+
+  const body = document.createElement("div");
+  body.className = "project-card-body";
+  body.appendChild(checkbox);
+  body.appendChild(titleBtn);
+  body.appendChild(projectMeta);
+  body.appendChild(projectBadges);
+
+  card.appendChild(cover);
+  card.appendChild(body);
   return card;
 }
 
@@ -1944,6 +1977,29 @@ function formatDuration(startTs, endTs, lang) {
   if (years > 0) enParts.push(years + (years === 1 ? " year" : " years"));
   if (months > 0) enParts.push(months + (months === 1 ? " month" : " months"));
   return enParts.length > 0 ? enParts.join(" ") : "0 months";
+}
+
+function resolveCoverImage(project) {
+  if (project && isSafeAttachmentHref(project.coverUrl))
+    return project.coverUrl;
+  if (project && isSafeAttachmentHref(project.thumbnail))
+    return project.thumbnail;
+  return null;
+}
+
+function getProjectInitials(project) {
+  var title = (project && project.title) || "";
+  var cleaned = title.replace(/[^\p{L}\p{N}]/gu, "");
+  if (cleaned.length === 0) return "KEI";
+  return cleaned.slice(0, 2).toUpperCase();
+}
+
+function createPlaceholderCover(project) {
+  var placeholder = document.createElement("div");
+  placeholder.className = "cover-placeholder";
+  placeholder.textContent = getProjectInitials(project);
+  placeholder.setAttribute("aria-label", (project && project.title) || "");
+  return placeholder;
 }
 
 // F2 attachments: only allow http/https absolute URLs and same-origin
