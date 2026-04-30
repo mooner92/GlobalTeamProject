@@ -48,6 +48,45 @@
       aliases: ["link", "url", "source link", "source url"],
       optional: true,
     },
+    { key: "doi", header: "DOI", aliases: ["doi"], optional: true },
+    { key: "isbn", header: "ISBN", aliases: ["isbn"], optional: true },
+    { key: "issn", header: "ISSN", aliases: ["issn"], optional: true },
+    {
+      key: "authors",
+      header: "Authors",
+      aliases: ["authors", "author"],
+      optional: true,
+    },
+    {
+      key: "publishedDate",
+      header: "Published",
+      aliases: ["published", "publish date", "발간일"],
+      optional: true,
+    },
+    {
+      key: "abstract",
+      header: "Abstract",
+      aliases: ["abstract", "summary", "요약"],
+      optional: true,
+    },
+    {
+      key: "source",
+      header: "Source",
+      aliases: ["source", "출처"],
+      optional: true,
+    },
+    {
+      key: "coverUrl",
+      header: "Cover URL",
+      aliases: ["cover url", "cover", "thumbnail url"],
+      optional: true,
+    },
+    {
+      key: "elibUrl",
+      header: "E-library URL",
+      aliases: ["e-library url", "elib", "elib url"],
+      optional: true,
+    },
   ];
 
   const REQUIRED_HEADERS = CONTRACT_FIELDS.filter(function (field) {
@@ -398,6 +437,42 @@
           columnMap.sourceUrl !== undefined
             ? normalizeDisplayValue(row[columnMap.sourceUrl])
             : "";
+        const doi =
+          columnMap.doi !== undefined
+            ? normalizeDisplayValue(row[columnMap.doi])
+            : "";
+        const isbn =
+          columnMap.isbn !== undefined
+            ? normalizeDisplayValue(row[columnMap.isbn])
+            : "";
+        const issn =
+          columnMap.issn !== undefined
+            ? normalizeDisplayValue(row[columnMap.issn])
+            : "";
+        const authors =
+          columnMap.authors !== undefined
+            ? normalizeDisplayValue(row[columnMap.authors])
+            : "";
+        const publishedDate =
+          columnMap.publishedDate !== undefined
+            ? normalizeDisplayValue(row[columnMap.publishedDate])
+            : "";
+        const abstract =
+          columnMap.abstract !== undefined
+            ? normalizeDisplayValue(row[columnMap.abstract])
+            : "";
+        const source =
+          columnMap.source !== undefined
+            ? normalizeDisplayValue(row[columnMap.source])
+            : "";
+        const coverUrl =
+          columnMap.coverUrl !== undefined
+            ? normalizeDisplayValue(row[columnMap.coverUrl])
+            : "";
+        const elibUrl =
+          columnMap.elibUrl !== undefined
+            ? normalizeDisplayValue(row[columnMap.elibUrl])
+            : "";
 
         return {
           id: rawId || index + 1,
@@ -418,6 +493,15 @@
           thumbnail: thumbnail,
           pdfPath: pdfPath,
           sourceUrl: sourceUrl,
+          doi: doi,
+          isbn: isbn,
+          issn: issn,
+          authors: authors,
+          publishedDate: publishedDate,
+          abstract: abstract,
+          source: source,
+          coverUrl: coverUrl,
+          elibUrl: elibUrl,
         };
       })
       .filter(function (project) {

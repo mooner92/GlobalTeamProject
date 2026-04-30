@@ -75,7 +75,20 @@ const existingHeaders = headerRow.map((h) =>
     .trim()
     .toLowerCase(),
 );
-const optionalHeaders = ["Thumbnail", "PDF", "Link"];
+const optionalHeaders = [
+  "Thumbnail",
+  "PDF",
+  "Link",
+  "DOI",
+  "ISBN",
+  "ISSN",
+  "Authors",
+  "Published",
+  "Abstract",
+  "Source",
+  "Cover URL",
+  "E-library URL",
+];
 let columnsAdded = 0;
 optionalHeaders.forEach((header) => {
   if (!existingHeaders.includes(header.toLowerCase())) {

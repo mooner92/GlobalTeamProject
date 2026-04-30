@@ -78,6 +78,18 @@ function resolveInputPath(inputArg) {
   return path.resolve(process.cwd(), relativeInput);
 }
 
+const DOI_REGEX = /^10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+$/i;
+const SOURCE_WHITELIST = new Set([
+  "research",
+  "elibrary",
+  "journal",
+  "working-paper",
+]);
+
+function isSafeUrl(value) {
+  return value.startsWith("https://") || value.startsWith("data/");
+}
+
 function validateSpreadsheet(filePath, options) {
   const parsed = parseWorkbookFromFile(filePath, XLSX, {
     sheetName: options.sheetName,
@@ -116,6 +128,7 @@ function validateSpreadsheet(filePath, options) {
         0,
       ),
     },
+    projects: parsed.projects,
   };
 }
 
@@ -136,8 +149,40 @@ try {
   const inputPath = resolveInputPath(cliOptions.inputPath);
   const result = validateSpreadsheet(inputPath, cliOptions);
 
+  // Post-pass: emit warnings (non-fatal) for optional field value issues.
+  for (const project of result.projects) {
+    const id = project.id;
+
+    if (project.doi && !DOI_REGEX.test(project.doi)) {
+      console.warn(
+        `[DATA_VALIDATION_WARN] id=${id} field=doi value="${project.doi}"`,
+      );
+    }
+
+    if (project.coverUrl && !isSafeUrl(project.coverUrl)) {
+      console.warn(
+        `[DATA_VALIDATION_WARN] id=${id} field=coverUrl value="${project.coverUrl}"`,
+      );
+    }
+
+    if (project.elibUrl && !isSafeUrl(project.elibUrl)) {
+      console.warn(
+        `[DATA_VALIDATION_WARN] id=${id} field=elibUrl value="${project.elibUrl}"`,
+      );
+    }
+
+    if (project.source && !SOURCE_WHITELIST.has(project.source.toLowerCase())) {
+      console.warn(
+        `[DATA_VALIDATION_WARN] id=${id} field=source value="${project.source}"`,
+      );
+    }
+  }
+
+  // Remove internal projects array from printed JSON (it's large and not part of the contract summary).
+  // eslint-disable-next-line no-unused-vars
+  const { projects: _projects, ...summary } = result;
   console.log("[DATA_VALIDATION_OK]");
-  console.log(JSON.stringify(result, null, 2));
+  console.log(JSON.stringify(summary, null, 2));
 } catch (error) {
   const formatted = formatError(error);
   console.error("[DATA_VALIDATION_ERROR]");
