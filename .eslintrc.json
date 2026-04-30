@@ -21,6 +21,16 @@
       }
     },
     {
+      "files": ["scripts/gateway.js"],
+      "env": {
+        "browser": true,
+        "es2022": true
+      },
+      "globals": {
+        "KEII18n": "readonly"
+      }
+    },
+    {
       "files": ["scripts/i18n/dict.js"],
       "env": {
         "browser": true,

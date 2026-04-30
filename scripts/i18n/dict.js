@@ -147,6 +147,53 @@
       "프로젝트 {title} 선택됨. 총 {count}개 선택됨.",
     "announce.project.deselected":
       "프로젝트 {title} 선택 해제됨. 총 {count}개 선택됨.",
+
+    "gateway.skip": "본문으로 건너뛰기",
+    "gateway.nav.aria": "게이트웨이 섹션",
+    "gateway.nav.areas": "연구 분야",
+    "gateway.nav.featured": "주요 연구",
+    "gateway.nav.destinations": "어디로 갈까",
+    "gateway.nav.connect": "문의",
+    "gateway.opensInNewTab": "(새 탭에서 열림)",
+
+    "gateway.hero.eyebrow": "한국환경연구원",
+    "gateway.hero.headline": "대한민국의 국가 환경정책 싱크탱크.",
+    "gateway.hero.sub":
+      "기후·대기·물·지속가능성 정책을 형성하는 독립 연구. 한국, 그리고 그 너머까지.",
+    "gateway.hero.cta.primary": "연구 분야 보기",
+    "gateway.hero.cta.secondary": "KEI 본 사이트로",
+
+    "gateway.areas.heading": "무엇을 연구하나요",
+    "gateway.areas.lede": "한국 환경정책의 일곱 개 주요 영역.",
+    "gateway.areas.aria": "연구 분야 카드",
+
+    "gateway.featured.heading": "주요 연구",
+    "gateway.featured.lede": "최근 KEI의 영문 자료를 큐레이션했습니다.",
+    "gateway.featured.aria": "주요 연구 카드",
+    "gateway.featured.cta": "원문 보기",
+
+    "gateway.destinations.heading": "다음 행선지",
+    "gateway.destinations.lede":
+      "찾으시는 정보에 맞는 KEI 사이트로 안내합니다.",
+    "gateway.destinations.aria": "KEI 행선지",
+
+    "gateway.connect.heading": "문의하기",
+    "gateway.connect.lede": "맞는 채널로 직접 연락하세요.",
+    "gateway.connect.intl.title": "국제 협력",
+    "gateway.connect.intl.body": "공동 연구·파트너십·방문 연구원 문의.",
+    "gateway.connect.media.title": "언론 문의",
+    "gateway.connect.media.body": "보도·인터뷰·정책 코멘터리 요청.",
+    "gateway.connect.general.title": "일반 문의",
+    "gateway.connect.general.body":
+      "그 외 모든 문의 — 적합한 팀으로 안내해 드립니다.",
+
+    "gateway.footer.copyright": "© 한국환경연구원. All rights reserved.",
+    "gateway.footer.license":
+      "데이터: KEI 발간물 메타데이터 (출처 표기 후 사용).",
+    "gateway.footer.updated": "업데이트",
+    "gateway.footer.allProjects": "전체 카탈로그 보기 →",
+
+    "legacy.back": "게이트웨이로 돌아가기",
   };
 
   var en = {
@@ -289,6 +336,59 @@
     "announce.project.selected": "Project {title} selected. {count} selected.",
     "announce.project.deselected":
       "Project {title} deselected. {count} selected.",
+
+    "gateway.skip": "Skip to main content",
+    "gateway.nav.aria": "Gateway sections",
+    "gateway.nav.areas": "What we do",
+    "gateway.nav.featured": "Featured",
+    "gateway.nav.destinations": "Where to go",
+    "gateway.nav.connect": "Connect",
+    "gateway.opensInNewTab": "(opens in a new tab)",
+
+    "gateway.hero.eyebrow": "Korea Environment Institute",
+    "gateway.hero.headline":
+      "South Korea's national environmental policy think tank.",
+    "gateway.hero.sub":
+      "Independent research that shapes climate, air, water, and sustainability policy in Korea — and beyond.",
+    "gateway.hero.cta.primary": "See what we do",
+    "gateway.hero.cta.secondary": "Visit KEI main site",
+
+    "gateway.areas.heading": "What we do",
+    "gateway.areas.lede":
+      "Seven research areas across Korea's environmental policy landscape.",
+    "gateway.areas.aria": "Research area cards",
+
+    "gateway.featured.heading": "Featured research",
+    "gateway.featured.lede":
+      "A curated selection of recent KEI work in English.",
+    "gateway.featured.aria": "Featured research cards",
+    "gateway.featured.cta": "Read full paper",
+
+    "gateway.destinations.heading": "Where to go next",
+    "gateway.destinations.lede":
+      "The right KEI site for what you're looking for.",
+    "gateway.destinations.aria": "KEI destinations",
+
+    "gateway.connect.heading": "Connect with us",
+    "gateway.connect.lede": "Get in touch through the right channel.",
+    "gateway.connect.intl.title": "International cooperation",
+    "gateway.connect.intl.body":
+      "Joint research, partnerships, and visiting researcher inquiries.",
+    "gateway.connect.media.title": "Media inquiries",
+    "gateway.connect.media.body":
+      "Press, interviews, and policy commentary requests.",
+    "gateway.connect.general.title": "General inquiries",
+    "gateway.connect.general.body":
+      "Everything else — we'll route you to the right team.",
+
+    "gateway.footer.copyright":
+      "© Korea Environment Institute. All rights reserved.",
+    "gateway.footer.license":
+      "Data: KEI publication metadata, used with attribution.",
+    "gateway.footer.updated": "Updated",
+    "gateway.footer.allProjects": "Browse the full catalog →",
+
+    "legacy.back": "Back to gateway",
   };
 
   function getLang() {
