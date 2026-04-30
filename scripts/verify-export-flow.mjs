@@ -39,13 +39,13 @@ async function waitForReachable(url, timeoutMs) {
 }
 
 async function ensureServerReady() {
-  const healthUrl = "http://127.0.0.1:4173/index.html";
+  const healthUrl = "http://127.0.0.1:4173/all-projects.html";
   const existingReady = await canReach(healthUrl);
   if (existingReady) {
     return { process: null };
   }
 
-  const serverProcess = spawn("python3", ["-m", "http.server", "4173"], {
+  const serverProcess = spawn(process.execPath, ["scripts/serve.mjs", "4173"], {
     cwd: repoRoot,
     stdio: "ignore",
   });
@@ -68,7 +68,7 @@ async function run() {
 
   try {
     const page = await browser.newPage();
-    await page.goto("http://127.0.0.1:4173/index.html", {
+    await page.goto("http://127.0.0.1:4173/all-projects.html", {
       waitUntil: "domcontentloaded",
     });
     await page.waitForFunction(

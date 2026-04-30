@@ -9,7 +9,7 @@ import { chromium } from "playwright";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
-const appUrl = "http://127.0.0.1:4173/index.html";
+const appUrl = "http://127.0.0.1:4173/all-projects.html";
 
 const evidenceDir = path.join(repoRoot, ".sisyphus", "evidence");
 const artifactJsonPath = path.join(evidenceDir, "task-f3-manual-qa.json");
@@ -40,7 +40,7 @@ async function ensureServerReady() {
     return { process: null };
   }
 
-  const serverProcess = spawn("python3", ["-m", "http.server", "4173"], {
+  const serverProcess = spawn(process.execPath, ["scripts/serve.mjs", "4173"], {
     cwd: repoRoot,
     stdio: "ignore",
   });
@@ -227,7 +227,7 @@ async function run() {
 
     const errorPage = await browser.newPage();
     await errorPage.goto(
-      "http://127.0.0.1:4173/index.html?dataFile=data/fixtures/projects.malformed-missing-list-sheet.xlsx",
+      "http://127.0.0.1:4173/all-projects.html?dataFile=data/fixtures/projects.malformed-missing-list-sheet.xlsx",
       {
         waitUntil: "domcontentloaded",
       },

@@ -23,7 +23,7 @@ const checks = preferredChecks.filter(
 );
 
 const healthUrl =
-  process.env.APP_BASE_URL || "http://127.0.0.1:4173/index.html";
+  process.env.APP_BASE_URL || "http://127.0.0.1:4173/all-projects.html";
 
 async function canReach(url) {
   try {
@@ -54,7 +54,7 @@ async function ensureServerIfNeeded() {
     return null;
   }
 
-  const server = spawn("python3", ["-m", "http.server", "4173"], {
+  const server = spawn(process.execPath, ["scripts/serve.mjs", "4173"], {
     stdio: "ignore",
     detached: true,
   });
