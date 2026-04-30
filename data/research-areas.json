@@ -1,0 +1,70 @@
+{
+  "$schema": "./research-areas.schema.json",
+  "version": 1,
+  "updated": "2026-04-30",
+  "items": [
+    {
+      "id": "climate-carbon",
+      "title_en": "Climate & Carbon",
+      "title_ko": "기후·탄소",
+      "blurb_en": "Net-zero pathways, carbon pricing, and climate adaptation policy for Korea.",
+      "blurb_ko": "한국의 탄소중립 경로, 탄소가격, 기후적응 정책.",
+      "icon": "cloud",
+      "destination": "https://www.kei.re.kr/eng/sub.es?mid=a30203000000"
+    },
+    {
+      "id": "air-quality",
+      "title_en": "Air Quality",
+      "title_ko": "대기 환경",
+      "blurb_en": "Fine-particulate research, transboundary pollution, and air management strategies.",
+      "blurb_ko": "초미세먼지, 월경성 오염, 대기관리 전략.",
+      "icon": "wind",
+      "destination": "https://www.kei.re.kr/eng/sub.es?mid=a30203000000"
+    },
+    {
+      "id": "water-watershed",
+      "title_en": "Water & Watershed",
+      "title_ko": "물·유역",
+      "blurb_en": "Water quality, watershed governance, and integrated basin management.",
+      "blurb_ko": "수질, 유역 거버넌스, 통합 물관리.",
+      "icon": "droplet",
+      "destination": "https://www.kei.re.kr/eng/sub.es?mid=a30203000000"
+    },
+    {
+      "id": "resource-circulation",
+      "title_en": "Resource Circulation",
+      "title_ko": "자원순환",
+      "blurb_en": "Circular-economy transitions, waste minimization, and producer responsibility.",
+      "blurb_ko": "순환경제 전환, 폐기물 저감, 생산자 책임.",
+      "icon": "recycle",
+      "destination": "https://www.kei.re.kr/eng/sub.es?mid=a30203000000"
+    },
+    {
+      "id": "biodiversity-ecosystem",
+      "title_en": "Biodiversity & Ecosystem",
+      "title_ko": "생물다양성·생태계",
+      "blurb_en": "Habitat conservation, ecosystem services, and nature-based solutions.",
+      "blurb_ko": "서식지 보전, 생태계 서비스, 자연기반 해법.",
+      "icon": "leaf",
+      "destination": "https://www.kei.re.kr/eng/sub.es?mid=a30203000000"
+    },
+    {
+      "id": "sustainable-cities",
+      "title_en": "Sustainable Cities",
+      "title_ko": "지속가능한 도시",
+      "blurb_en": "Green urbanism, low-carbon transport, and resilient infrastructure.",
+      "blurb_ko": "녹색도시, 저탄소 교통, 탄력적 인프라.",
+      "icon": "building",
+      "destination": "https://www.kei.re.kr/eng/sub.es?mid=a30203000000"
+    },
+    {
+      "id": "environmental-health",
+      "title_en": "Environmental Health",
+      "title_ko": "환경 보건",
+      "blurb_en": "Chemical safety, exposure assessment, and risk-based health policy.",
+      "blurb_ko": "화학물질 안전, 노출평가, 위해 기반 보건정책.",
+      "icon": "heart-pulse",
+      "destination": "https://www.kei.re.kr/eng/sub.es?mid=a30203000000"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "updated": "2026-04-30",
+  "items": [
+    {
+      "id": "kei-research",
+      "title_en": "KEI Research",
+      "title_ko": "KEI 연구",
+      "blurb_en": "Browse research themes, projects, and project leaders across KEI's seven research divisions.",
+      "blurb_ko": "KEI 7개 연구실의 주제·프로젝트·연구자 정보를 둘러보세요.",
+      "url": "https://www.kei.re.kr/eng/sub.es?mid=a30203000000",
+      "audience_hint_en": "For policy researchers and academics",
+      "audience_hint_ko": "정책 연구자·학계 대상",
+      "icon": "flask"
+    },
+    {
+      "id": "kei-elibrary",
+      "title_en": "KEI E-library",
+      "title_ko": "KEI 전자도서관",
+      "blurb_en": "Search the full catalog of KEI publications, working papers, and reports — Korean and English.",
+      "blurb_ko": "KEI 발간물·워킹페이퍼·보고서 전체 카탈로그 검색 (국·영문).",
+      "url": "https://www.kei.re.kr/elib/main.do",
+      "audience_hint_en": "For full-text catalog search",
+      "audience_hint_ko": "전체 카탈로그 검색용",
+      "icon": "book-open"
+    },
+    {
+      "id": "kei-publications",
+      "title_en": "KEI Publications",
+      "title_ko": "KEI 정기간행물",
+      "blurb_en": "Peer-reviewed journals, periodic series, and English policy briefs published by KEI.",
+      "blurb_ko": "KEI 정기 학술지·연속간행물·영문 정책 브리프.",
+      "url": "https://www.kei.re.kr/eng/sub.es?mid=a30201010000",
+      "audience_hint_en": "For citable academic output",
+      "audience_hint_ko": "인용 가능한 학술 출판물",
+      "icon": "file-text"
+    },
+    {
+      "id": "kei-international",
+      "title_en": "International Cooperation",
+      "title_ko": "국제 협력",
+      "blurb_en": "Joint projects with OECD, UNEP, and partner institutes — channel for partnership inquiries.",
+      "blurb_ko": "OECD·UNEP·파트너 기관과의 공동 프로젝트, 협력 문의 창구.",
+      "url": "https://www.kei.re.kr/eng/sub.es?mid=a30206000000",
+      "audience_hint_en": "For NGO, government, and academic partners",
+      "audience_hint_ko": "NGO·정부·학계 파트너 대상",
+      "icon": "globe"
+    },
+    {
+      "id": "kei-about",
+      "title_en": "About KEI",
+      "title_ko": "KEI 소개",
+      "blurb_en": "Mission, governance, leadership, and the institute's role in Korea's environmental policy.",
+      "blurb_ko": "KEI 미션·거버넌스·경영진, 한국 환경정책에서의 역할.",
+      "url": "https://www.kei.re.kr/eng/main.es?mid=a10101000000",
+      "audience_hint_en": "For first-time visitors",
+      "audience_hint_ko": "첫 방문자 대상",
+      "icon": "info"
+    }
+  ]
+}
