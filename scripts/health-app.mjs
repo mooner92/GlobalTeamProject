@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const defaultBaseUrl = process.env.APP_BASE_URL || "http://127.0.0.1:4173";
-const defaultTargets = ["/index.html", "/data/projects.xlsx"];
+const defaultTargets = ["/all-projects.html", "/data/projects.xlsx"];
 
 function normalizeTarget(baseUrl, target) {
   if (/^https?:\/\//i.test(target)) {
