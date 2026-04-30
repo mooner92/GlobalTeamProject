@@ -10,7 +10,24 @@ import AxeBuilder from "@axe-core/playwright";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
-const appUrl = "http://127.0.0.1:4173/index.html";
+
+const targets = [
+  {
+    name: "gateway",
+    url: "http://127.0.0.1:4173/index.html",
+    readyPredicate: () =>
+      typeof window.__keiGetGatewayState === "function" &&
+      window.__keiGetGatewayState().ready === true,
+  },
+  {
+    name: "all-projects",
+    url: "http://127.0.0.1:4173/all-projects.html",
+    readyPredicate: () => {
+      const text = document.getElementById("resultsCount")?.textContent ?? "";
+      return text !== "—" && text.trim() !== "";
+    },
+  },
+];
 
 async function canReach(url) {
   try {
@@ -32,17 +49,17 @@ async function waitForReachable(url, timeoutMs) {
   return false;
 }
 
-async function ensureServerReady() {
-  if (await canReach(appUrl)) {
+async function ensureServerReady(probeUrl) {
+  if (await canReach(probeUrl)) {
     return { process: null };
   }
 
-  const serverProcess = spawn("python3", ["-m", "http.server", "4173"], {
+  const serverProcess = spawn(process.execPath, ["scripts/serve.mjs", "4173"], {
     cwd: repoRoot,
     stdio: "ignore",
   });
 
-  const ready = await waitForReachable(appUrl, 12000);
+  const ready = await waitForReachable(probeUrl, 12000);
   if (!ready) {
     serverProcess.kill("SIGTERM");
     throw new Error(
@@ -58,46 +75,54 @@ async function run() {
     recursive: true,
   });
 
-  const server = await ensureServerReady();
+  const server = await ensureServerReady(targets[0].url);
   const browser = await chromium.launch({ headless: true });
 
+  let totalCritical = 0;
   try {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await page.goto(appUrl, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(
-      () => {
-        const text = document.getElementById("resultsCount")?.textContent ?? "";
-        return text !== "—" && text.trim() !== "";
-      },
-      { timeout: 20000 },
-    );
+    for (const target of targets) {
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      await page.goto(target.url, { waitUntil: "domcontentloaded" });
+      await page.waitForFunction(target.readyPredicate, { timeout: 20000 });
 
-    const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa"])
-      .analyze();
+      const results = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa"])
+        .analyze();
 
-    const critical = results.violations.filter((v) => v.impact === "critical");
-    if (critical.length > 0) {
-      console.error(
-        `[check:a11y] FAILED: ${critical.length} critical violation(s) detected.`,
+      const critical = results.violations.filter(
+        (v) => v.impact === "critical",
       );
-      for (const violation of critical) {
-        console.error(`- ${violation.id}: ${violation.help}`);
+      if (critical.length > 0) {
+        console.error(
+          `[check:a11y] ${target.name}: ${critical.length} critical violation(s).`,
+        );
+        for (const violation of critical) {
+          console.error(`- ${violation.id}: ${violation.help}`);
+        }
+        totalCritical += critical.length;
+      } else {
+        console.log(`[check:a11y] ${target.name}: PASS (no critical).`);
       }
-      process.exit(1);
-    }
 
-    await context.close();
-    console.log(
-      "[check:a11y] PASS: no critical accessibility violations detected.",
-    );
+      await context.close();
+    }
   } finally {
     await browser.close();
     if (server.process) {
       server.process.kill("SIGTERM");
     }
   }
+
+  if (totalCritical > 0) {
+    console.error(
+      `[check:a11y] FAILED: ${totalCritical} critical violation(s) across ${targets.length} pages.`,
+    );
+    process.exit(1);
+  }
+  console.log(
+    `[check:a11y] PASS: no critical accessibility violations across ${targets.length} pages.`,
+  );
 }
 
 run().catch((error) => {
