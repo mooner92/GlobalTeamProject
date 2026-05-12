@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-08T00:00:00+09:00",
+  "framework": "vanilla-static",
+  "frameworkConfidence": "high",
+  "styleSystem": "plain-css",
+  "styleSystemConfidence": "high",
+  "seedAdoption": "none",
+  "scanTarget": ["index.html", "styles/main.css"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    ".next",
+    ".turbo",
+    "coverage",
+    ".git",
+    ".playwright-browsers"
+  ],
+  "notes": [
+    "package.json: kei-project-search v0.1.0 — Playwright-driven static site (no React/Next/Vue/Tailwind)",
+    "Single CSS file: styles/main.css contains both legacy catalog (lines 1-1262) and gateway landing (lines 1264-1993)",
+    "index.html consumes only the gateway-* selectors; the legacy block is dead weight on this page",
+    "No design-system dependency in package.json — Seed adoption mode is greenfield-import",
+    "scope per user: index.html (294L) + styles/main.css (1993L)"
+  ]
+}

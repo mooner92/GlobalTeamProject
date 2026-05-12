@@ -1,0 +1,608 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-08T00:00:00+09:00",
+  "detected": {
+    "framework": "vanilla-static",
+    "styleSystem": "plain-css",
+    "seedAdoption": "none"
+  },
+  "summary": {
+    "keep": 6,
+    "refactor": 14,
+    "drop": 9,
+    "import": 3,
+    "needsDecision": 4
+  },
+  "items": [
+    {
+      "id": "k1-semantic-html-skeleton",
+      "category": "keep",
+      "kind": "structure",
+      "current": "header > main > section x4 > footer",
+      "target": "(no change)",
+      "rationale": "semantic HTML5 골격 + role='list' + aria-labelledby가 Seed의 '의미 우선' 철학과 정합",
+      "occurrences": [{ "file": "index.html", "line": 30, "to": 281 }],
+      "confidence": 1.0,
+      "needsDecision": false,
+      "risk": "none"
+    },
+    {
+      "id": "k2-skip-link",
+      "category": "keep",
+      "kind": "a11y",
+      "current": ".visually-hidden / .focusable-skip 패턴",
+      "target": "(no change)",
+      "rationale": "Seed 공식 패턴과 동등. 키보드 사용자에게 메인 컨텐츠 도달 단축 제공",
+      "occurrences": [
+        { "file": "index.html", "line": 23 },
+        { "file": "styles/main.css", "line": 14 },
+        { "file": "styles/main.css", "line": 1293 }
+      ],
+      "confidence": 1.0,
+      "needsDecision": false,
+      "risk": "none"
+    },
+    {
+      "id": "k3-aria-labelledby-sections",
+      "category": "keep",
+      "kind": "a11y",
+      "current": "각 section이 aria-labelledby로 자체 h2와 바인딩",
+      "target": "(no change)",
+      "rationale": "스크린리더가 섹션 진입 시 라벨을 읽음. 추가 작업 불필요",
+      "occurrences": [
+        { "file": "index.html", "line": 63 },
+        { "file": "index.html", "line": 107 },
+        { "file": "index.html", "line": 134 },
+        { "file": "index.html", "line": 160 },
+        { "file": "index.html", "line": 189 }
+      ],
+      "confidence": 1.0,
+      "needsDecision": false,
+      "risk": "none"
+    },
+    {
+      "id": "k4-prefers-reduced-motion",
+      "category": "keep",
+      "kind": "a11y",
+      "current": "@media (prefers-reduced-motion: reduce) 분기로 hero 애니메이션·hover transition 차단",
+      "target": "(no change; d1 적용 후 더 단순해짐)",
+      "rationale": "접근성 가드. d1(hero drift 제거) 적용 후에도 카드 hover 등에서 가치 있음",
+      "occurrences": [{ "file": "styles/main.css", "line": 1983 }],
+      "confidence": 1.0,
+      "needsDecision": false,
+      "risk": "none"
+    },
+    {
+      "id": "k5-single-solid-cta",
+      "category": "keep",
+      "kind": "variant-strategy",
+      "current": "한 페이지에 brandSolid CTA 1개 (.gateway-cta-primary)",
+      "target": "(no change)",
+      "rationale": "Seed 룰 부합 — solid는 페이지당 1개. d3에서 그림자만 제거하면 Seed 정합",
+      "occurrences": [
+        { "file": "index.html", "line": 81 },
+        { "file": "styles/main.css", "line": 1465 }
+      ],
+      "confidence": 1.0,
+      "needsDecision": false,
+      "risk": "none"
+    },
+    {
+      "id": "k6-root-css-variables-seed",
+      "category": "keep",
+      "kind": "token-foundation",
+      "current": ":root 에 --kei-* 변수 8개 정의",
+      "target": "(seed semantic 레이어를 추가 — i1 참조)",
+      "rationale": "토큰화의 출발점. primitive로서 KEI 브랜드 색을 지키되 Seed semantic 레이어를 위에 얹음",
+      "occurrences": [{ "file": "styles/main.css", "line": 1266, "to": 1284 }],
+      "confidence": 0.9,
+      "needsDecision": false,
+      "risk": "none"
+    },
+
+    {
+      "id": "r1-cta-shadow-flat",
+      "category": "refactor",
+      "kind": "anti-pattern",
+      "current": ".gateway-cta-primary { box-shadow: 0 4px 16px rgba(0,122,99,0.18); } + hover에서 0 8px 22px",
+      "target": "box-shadow 제거. hover는 background: var(--seed-color-bg-brand-solid-pressed)",
+      "rationale": "anti-patterns.md #13 — Seed 버튼은 flat. 그림자는 floating overlay(Snackbar/Dialog)에만",
+      "occurrences": [
+        { "file": "styles/main.css", "line": 1468 },
+        { "file": "styles/main.css", "line": 1474 }
+      ],
+      "confidence": 0.95,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "r2-card-hover-translateY",
+      "category": "refactor",
+      "kind": "anti-pattern",
+      "current": "areas/featured/destinations 카드 hover에 transform: translateY(-2px) + 그림자 강화",
+      "target": "transform 제거. hover는 border-color: var(--seed-color-stroke-brand-solid) 또는 bg.layer-floating-pressed",
+      "rationale": "anti-patterns.md #13 — '공중부양' 마이크로 인터랙션 반복은 AI-slop 시그널. 한 페이지에서 동일 효과 3종은 의미 없음",
+      "occurrences": [
+        { "file": "styles/main.css", "line": 1474 },
+        { "file": "styles/main.css", "line": 1554 },
+        { "file": "styles/main.css", "line": 1602 },
+        { "file": "styles/main.css", "line": 1736 }
+      ],
+      "confidence": 0.9,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "r3-radius-chaos-to-r3",
+      "category": "refactor",
+      "kind": "token",
+      "current": "border-radius 값 6종 혼재: 4/6/7/8/10/14px (gateway 영역만 집계)",
+      "target": "r2(8) / r3(12, 기본) / r4(16, 모달) / full 4종으로 통일. 6→8(r2), 7→8(r2), 10→12(r3), 14→12(r3)",
+      "rationale": "anti-patterns.md #10 / radius.md §원칙 1 — '한 화면에 3종 이상 radius 혼재 금지'",
+      "occurrences": [
+        {
+          "file": "styles/main.css",
+          "line": 1277,
+          "note": "--gateway-radius: 14px (정의)"
+        },
+        { "file": "styles/main.css", "line": 1304, "note": "skip 8px" },
+        { "file": "styles/main.css", "line": 1450, "note": "cta 10px" },
+        { "file": "styles/main.css", "line": 1683, "note": "featured-cta 8px" },
+        {
+          "file": "styles/main.css",
+          "line": 1864,
+          "note": "footer-link via kei var"
+        },
+        { "file": "styles/main.css", "line": 1903, "note": "lang-toggle 6px" }
+      ],
+      "confidence": 0.95,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "r4-spacing-off-4px-grid",
+      "category": "refactor",
+      "kind": "token",
+      "current": "padding/margin이 4px 그리드 밖 값 다수 사용: 13, 14, 17, 18, 22, 26, 36, 38",
+      "target": "인접 x{n} 토큰으로 흡수: 13→x3(12), 14→x3_5(14, 토큰 내), 17→x4(16), 18→x4_5(18), 22→x5_5 또는 x6(24), 26→x6_5 또는 x7(28), 38→x9(36) 또는 x10(40)",
+      "rationale": "anti-patterns.md #1 / spacing.md — 4px 그리드는 Seed의 비-타협 룰. 'magic number'는 일관성을 깬다",
+      "occurrences": [
+        { "file": "styles/main.css", "line": 1322, "note": "header 14px 28px" },
+        {
+          "file": "styles/main.css",
+          "line": 1419,
+          "note": "eyebrow margin 18px"
+        },
+        {
+          "file": "styles/main.css",
+          "line": 1427,
+          "note": "headline margin 22px"
+        },
+        { "file": "styles/main.css", "line": 1436, "note": "sub margin 36px" },
+        {
+          "file": "styles/main.css",
+          "line": 1449,
+          "note": "cta padding 13px 22px"
+        },
+        {
+          "file": "styles/main.css",
+          "line": 1538,
+          "note": "area-card 22px 22px 24px"
+        },
+        {
+          "file": "styles/main.css",
+          "line": 1641,
+          "note": "featured-body 18px 20px 22px"
+        },
+        {
+          "file": "styles/main.css",
+          "line": 1721,
+          "note": "destination-card 26px"
+        }
+      ],
+      "confidence": 0.9,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "r5-typography-30-sizes-collapse",
+      "category": "refactor",
+      "kind": "token",
+      "current": "gateway 영역 font-size 종 다수 (0.74/0.78/0.82/0.86/0.88/0.9/0.92/0.94/0.95/1/1.02/1.05/1.18/1.22/2/2.2/2.4/3.6rem 등 ~20종)",
+      "target": "Seed t1-t10 10단으로 흡수. clamp() 헤드라인은 BP 기반 t8/t9/t10 분기로 교체",
+      "rationale": "typography.md — 의미 단계가 10단인 시스템에 20종 사이즈는 무의미한 정밀도",
+      "occurrences": [
+        {
+          "file": "styles/main.css",
+          "line": 1422,
+          "note": "headline clamp(2rem, 5vw, 3.6rem)"
+        },
+        {
+          "file": "styles/main.css",
+          "line": 1432,
+          "note": "sub clamp(1.05, 1.6vw, 1.22rem)"
+        },
+        { "file": "styles/main.css", "line": 1508, "note": "section h2 clamp" },
+        {
+          "file": "styles/main.css",
+          "line": 1518,
+          "note": "section p 1.02rem"
+        },
+        { "file": "styles/main.css", "and_more": 12 }
+      ],
+      "confidence": 0.85,
+      "needsDecision": false,
+      "risk": "medium"
+    },
+    {
+      "id": "r6-line-height-hardcoded",
+      "category": "refactor",
+      "kind": "token",
+      "current": "line-height 1.12 / 1.35 / 1.4 / 1.45 / 1.5 / 1.55 / 1.6 혼재",
+      "target": "var(--seed-line-height-t{n})로 font-size와 같은 인덱스 페어링",
+      "rationale": "typography.md §왜 line-height가 한국어에 — 한국어는 라틴 대비 세로 공간 더 먹음. 1.5 하드코딩은 한국어에서 좁아 보임",
+      "occurrences": [
+        { "file": "styles/main.css", "line": 1425, "note": "headline 1.12" },
+        { "file": "styles/main.css", "line": 1433, "note": "sub 1.6" },
+        { "file": "styles/main.css", "line": 1518, "note": "section p 1.55" },
+        { "file": "styles/main.css", "and_more": 8 }
+      ],
+      "confidence": 0.85,
+      "needsDecision": false,
+      "risk": "medium"
+    },
+    {
+      "id": "r7-eyebrow-letter-spacing-overspread",
+      "category": "refactor",
+      "kind": "token",
+      "current": ".gateway-hero-eyebrow { letter-spacing: 0.16em }",
+      "target": "0.06em–0.08em (Seed caption/label 표준)",
+      "rationale": "0.16em uppercase는 자간이 과도하게 벌어져 시각 노이즈 — '디자인을 의도한 티'를 내려는 AI-slop 패턴",
+      "occurrences": [{ "file": "styles/main.css", "line": 1416 }],
+      "confidence": 0.8,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "r8-fontfamily-pretendard-priority",
+      "category": "refactor",
+      "kind": "i18n",
+      "current": "font-family: 'Inter', 'Segoe UI', 'Pretendard', sans-serif",
+      "target": "font-family: 'Pretendard', 'Inter', system-ui, sans-serif",
+      "rationale": "한국어 우선 사이트인데 Pretendard가 3순위 — Inter에 한글 글리프 없으므로 OS 한글 폰트(Segoe UI 한글)로 fallback되어 OS별 한글 렌더링 일관성 깨짐",
+      "occurrences": [{ "file": "styles/main.css", "line": 1289 }],
+      "confidence": 0.95,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "r9-html-lang-static",
+      "category": "refactor",
+      "kind": "i18n",
+      "current": "<html lang=\"en\"> 정적. JS 토글에서 갱신 여부 확인 필요",
+      "target": "i18n 토글 핸들러에서 document.documentElement.lang = 'ko' | 'en' 갱신",
+      "rationale": "스크린리더가 한국어 본문을 영어 발음으로 읽음. WCAG 3.1.2 위반 가능",
+      "occurrences": [
+        { "file": "index.html", "line": 2 },
+        { "file": "scripts/gateway.js", "note": "토글 핸들러 위치 검증 필요" }
+      ],
+      "confidence": 0.85,
+      "needsDecision": true,
+      "decisionPrompt": "scripts/gateway.js 또는 i18n/dict.js에서 langToggle 핸들러를 확인했나요? 이미 lang을 갱신 중이면 r9는 keep으로 강등됩니다.",
+      "risk": "low"
+    },
+    {
+      "id": "r10-cta-anatomy-actionbutton",
+      "category": "refactor",
+      "kind": "component",
+      "current": "<a class=\"gateway-cta gateway-cta-primary\" href=\"#areas\">",
+      "target": "Seed ActionButton variant='brandSolid' anatomy 기반 클래스 (또는 React 도입 시 컴포넌트). hash 링크라도 anatomy(slot/state)는 동일",
+      "rationale": "anti-patterns.md #2 — 앵커를 버튼처럼 스타일링하더라도 Seed anatomy(prefixIcon/label/suffixIcon, hover/pressed/disabled/loading)는 따라야 함",
+      "occurrences": [
+        { "file": "index.html", "line": 81 },
+        { "file": "index.html", "line": 88 },
+        { "file": "index.html", "line": 263, "note": "footer link" }
+      ],
+      "confidence": 0.7,
+      "needsDecision": true,
+      "decisionPrompt": "현재 vanilla 정적 사이트입니다. React/Vue 도입 없이 anatomy를 BEM 클래스로만 정렬할까요(권장), 아니면 도입 후 컴포넌트화할까요?",
+      "risk": "medium"
+    },
+    {
+      "id": "r11-langtoggle-switch-or-segmented",
+      "category": "refactor",
+      "kind": "component",
+      "current": "<button id=\"langToggle\" aria-pressed=\"false\">한국어</button>",
+      "target": "Seed Switch (즉시 적용 토글) 또는 SegmentedControl 2-item ('한국어'/'English')",
+      "rationale": "decision-matrices: 즉시 적용 on/off는 Switch. 명시 분기 표시는 SegmentedControl. raw button + aria-pressed는 토글 의미가 약함",
+      "occurrences": [
+        { "file": "index.html", "line": 269 },
+        { "file": "styles/main.css", "line": 1895 }
+      ],
+      "confidence": 0.7,
+      "needsDecision": true,
+      "decisionPrompt": "Switch(미니멀) vs SegmentedControl(두 옵션 가시) 중 어느 쪽 의도인가요? 현재 라벨이 '한국어' 단일 표시라 Switch에 가깝습니다.",
+      "risk": "medium"
+    },
+    {
+      "id": "r12-connect-mailto-as-listitem",
+      "category": "refactor",
+      "kind": "component",
+      "current": ".gateway-connect-link — mailto: 링크를 본문 링크 톤(brand color + underline-on-hover)으로",
+      "target": "ActionButton variant='brandWeak' suffixIcon={IconExternalLine} 또는 ListItem trailing 슬롯",
+      "rationale": "메일 보내기는 액션이지 텍스트 링크가 아님. Seed에서 액션은 ActionButton 또는 ListItem",
+      "occurrences": [
+        { "file": "index.html", "line": 208, "to": 213 },
+        { "file": "index.html", "line": 220, "to": 225 },
+        { "file": "index.html", "line": 234, "to": 239 }
+      ],
+      "confidence": 0.8,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "r13-error-banner-tokens",
+      "category": "refactor",
+      "kind": "token",
+      "current": ".gateway-error-banner { background: #fff3f3; border: 1px solid #ffcdd2; color: #b71c1c; }",
+      "target": "background: var(--seed-color-bg-critical-weak); border-color: var(--seed-color-stroke-critical-solid); color: var(--seed-color-fg-critical);",
+      "rationale": "color.md §critical — 에러 영역은 critical 의미 토큰 사용",
+      "occurrences": [{ "file": "styles/main.css", "line": 1945, "to": 1954 }],
+      "confidence": 0.95,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "r14-footer-rgba-white-collapse",
+      "category": "refactor",
+      "kind": "token",
+      "current": "footer에 rgba(255,255,255,X) 알파 6종 (0.18/0.28/0.5/0.6/0.78/0.86)",
+      "target": "fg.neutral-inverted / fg.neutral-inverted-muted / fg.neutral-inverted-subtle 3단으로 흡수",
+      "rationale": "동일 색에 6종 알파는 의미 없는 변별. Seed의 inverted 3단으로 충분",
+      "occurrences": [
+        { "file": "styles/main.css", "line": 1842 },
+        { "file": "styles/main.css", "line": 1875 },
+        { "file": "styles/main.css", "line": 1878 },
+        { "file": "styles/main.css", "line": 1887 },
+        { "file": "styles/main.css", "line": 1899 },
+        { "file": "styles/main.css", "line": 1901 },
+        { "file": "styles/main.css", "line": 1914 }
+      ],
+      "confidence": 0.85,
+      "needsDecision": false,
+      "risk": "low"
+    },
+
+    {
+      "id": "d1-hero-drift-animation",
+      "category": "drop",
+      "kind": "anti-pattern",
+      "current": "@keyframes gatewayHeroDrift + animation: gatewayHeroDrift 18s ease-in-out infinite alternate (hero 배경)",
+      "target": "(remove)",
+      "rationale": "anti-patterns.md #13 — '예쁘게'를 위한 무한 모션. Seed는 정적·플랫. prefers-reduced-motion으로 가렸지만 기본값 자체를 제거해야 함",
+      "occurrences": [
+        { "file": "styles/main.css", "line": 1388, "note": "animation 선언" },
+        {
+          "file": "styles/main.css",
+          "line": 1391,
+          "to": 1404,
+          "note": "@keyframes"
+        }
+      ],
+      "confidence": 1.0,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "d2-hero-radial-gradients",
+      "category": "drop",
+      "kind": "anti-pattern",
+      "current": "hero 배경: radial(orange 42%) + radial(sage 55%) + linear(white→offwhite) 3중 합성",
+      "target": "단일 background: var(--seed-color-bg-layer-default) 또는 옅은 brand-weak. 그라디언트 제거",
+      "rationale": "anti-patterns.md #13 '파스텔 톤 연속'. 3중 그라디언트 합성은 AI-slop의 정확한 시그니처",
+      "occurrences": [{ "file": "styles/main.css", "line": 1372, "to": 1387 }],
+      "confidence": 0.95,
+      "needsDecision": false,
+      "risk": "medium"
+    },
+    {
+      "id": "d3-destination-gradient-wash",
+      "category": "drop",
+      "kind": "anti-pattern",
+      "current": ".gateway-destination-card { background: linear-gradient(180deg, #ffffff, rgba(0,122,99,0.04)); }",
+      "target": "background: var(--seed-color-bg-layer-default) (단색)",
+      "rationale": "4% 알파 그린 그라디언트는 의미 전달 0, 시각 노이즈만",
+      "occurrences": [{ "file": "styles/main.css", "line": 1722 }],
+      "confidence": 0.95,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "d4-featured-cover-gradient",
+      "category": "drop",
+      "kind": "anti-pattern",
+      "current": ".gateway-featured-cover / .gateway-featured-placeholder: linear-gradient(135deg, brand-solid, brand-deep)",
+      "target": "background: var(--seed-color-bg-brand-solid) (단색)",
+      "rationale": "color.md — brand-deep은 pressed 상태 토큰. 정적 배경에 사용은 의미 오용. 단색 brand-solid + fg.brand-contrast가 정답",
+      "occurrences": [
+        { "file": "styles/main.css", "line": 1608, "to": 1612 },
+        { "file": "styles/main.css", "line": 1633, "to": 1638 }
+      ],
+      "confidence": 0.9,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "d5-backdrop-filter-blur",
+      "category": "drop",
+      "kind": "anti-pattern",
+      "current": ".gateway-header { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }",
+      "target": "(remove). background를 var(--seed-color-bg-layer-floating) (불투명) 또는 layer-default로",
+      "rationale": "Seed에는 blur 효과 없음. 트렌디한 효과지만 평평한 surface가 일관됨. 또한 일부 저사양 기기 성능 부담",
+      "occurrences": [{ "file": "styles/main.css", "line": 1313, "to": 1314 }],
+      "confidence": 0.85,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "d6-external-tab-hint-text",
+      "category": "drop",
+      "kind": "ui-noise",
+      "current": "<span class=\"external-tab-hint\">(opens in a new tab)</span>",
+      "target": "<Icon svg={IconExternalLine} /> + visually-hidden 텍스트",
+      "rationale": "본문 길이의 한글 hint는 시각 노이즈. 아이콘 1개로 동일 의미. 스크린리더용 텍스트는 visually-hidden으로 분리",
+      "occurrences": [
+        { "file": "index.html", "line": 95, "to": 96 },
+        { "file": "styles/main.css", "line": 1489, "to": 1493 }
+      ],
+      "confidence": 0.85,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "d7-legacy-catalog-css-1to1262",
+      "category": "drop",
+      "kind": "dead-code",
+      "current": "styles/main.css 라인 1-1262 (catalog explorer 스타일 전체)",
+      "target": "styles/legacy-catalog.css로 분리. all-projects.html에서만 link. index.html은 미참조",
+      "rationale": "index.html은 이 1262줄에 매칭되는 클래스를 0개 사용. 모든 방문자가 dead CSS ~50KB 다운로드 중",
+      "occurrences": [{ "file": "styles/main.css", "line": 1, "to": 1262 }],
+      "confidence": 1.0,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "d8-spinner-slideup-keyframes",
+      "category": "drop",
+      "kind": "dead-code",
+      "current": "@keyframes spin (665L) + @keyframes slideUp (766L) — legacy toast/spinner 전용",
+      "target": "(remove with d7 — same legacy block)",
+      "rationale": "d7과 함께 분리되는 레거시. index.html에서 미사용",
+      "occurrences": [
+        { "file": "styles/main.css", "line": 665, "to": 669 },
+        { "file": "styles/main.css", "line": 766, "to": 776 }
+      ],
+      "confidence": 1.0,
+      "needsDecision": false,
+      "risk": "low"
+    },
+    {
+      "id": "d9-double-deep-shadow-toasts",
+      "category": "drop",
+      "kind": "dead-code",
+      "current": ".success-toast / .error-toast { box-shadow: 0 6px 24px rgba(0,0,0,0.18); }",
+      "target": "(remove with d7)",
+      "rationale": "d7과 같은 레거시. 분리 후 toast 컴포넌트는 Seed Snackbar로 대체",
+      "occurrences": [{ "file": "styles/main.css", "line": 736, "to": 776 }],
+      "confidence": 1.0,
+      "needsDecision": false,
+      "risk": "low"
+    },
+
+    {
+      "id": "i1-seed-semantic-token-layer",
+      "category": "import",
+      "kind": "token-foundation",
+      "current": "(none — :root에 KEI primitive 8개만 존재)",
+      "target": "styles/seed-tokens.css 또는 main.css 상단에 Seed semantic 토큰 매핑 레이어 추가 (color/dimension/radius/typography). primitive(KEI 그린)는 Seed semantic의 값으로 바인딩",
+      "rationale": "tokens/color.md §원칙 — primitive 직접 사용 금지, semantic으로 추상화. KEI는 자체 브랜드라 semantic 값에 KEI primitive를 바인딩하는 형태가 정답",
+      "occurrences": [
+        {
+          "file": "styles/main.css",
+          "line": 1266,
+          "to": 1284,
+          "note": "기존 :root 확장 위치"
+        }
+      ],
+      "confidence": 0.95,
+      "needsDecision": false,
+      "risk": "low",
+      "snippet": ":root {\n  /* primitive (KEI 브랜드) */\n  --kei-green: #007a63;\n  --kei-green-deep: #005a48;\n  /* Seed semantic — KEI에 바인딩 */\n  --seed-color-bg-brand-solid: var(--kei-green);\n  --seed-color-bg-brand-solid-pressed: var(--kei-green-deep);\n  --seed-color-bg-brand-weak: #e6f3ef;\n  --seed-color-fg-brand: var(--kei-green);\n  --seed-color-fg-brand-contrast: #ffffff;\n  --seed-color-fg-neutral: #2d2d2d;\n  --seed-color-fg-neutral-muted: #5a7a8a;\n  --seed-color-fg-neutral-inverted: #ffffff;\n  --seed-color-bg-layer-default: #fafaf7;\n  --seed-color-bg-layer-floating: #ffffff;\n  --seed-color-bg-critical-weak: #fff3f3;\n  --seed-color-fg-critical: #b71c1c;\n  --seed-color-stroke-critical-solid: #ffcdd2;\n  --seed-color-stroke-neutral-weak: #e3e8eb;\n  --seed-color-stroke-focus-ring: var(--kei-green);\n  /* dimension (4px grid) */\n  --seed-dimension-x1: 4px; --seed-dimension-x2: 8px;\n  --seed-dimension-x3: 12px; --seed-dimension-x4: 16px;\n  --seed-dimension-x5: 20px; --seed-dimension-x6: 24px;\n  --seed-dimension-x7: 28px; --seed-dimension-x8: 32px;\n  --seed-dimension-x12: 48px; --seed-dimension-x16: 64px;\n  /* radius */\n  --seed-radius-r2: 8px; --seed-radius-r3: 12px;\n  --seed-radius-r4: 16px; --seed-radius-full: 9999px;\n  /* typography (px static) */\n  --seed-font-size-t4: 14px; --seed-line-height-t4: 19px;\n  --seed-font-size-t5: 16px; --seed-line-height-t5: 22px;\n  --seed-font-size-t6: 18px; --seed-line-height-t6: 24px;\n  --seed-font-size-t7: 20px; --seed-line-height-t7: 27px;\n  --seed-font-size-t8: 22px; --seed-line-height-t8: 30px;\n  --seed-font-size-t9: 24px; --seed-line-height-t9: 32px;\n  --seed-font-size-t10: 26px; --seed-line-height-t10: 35px;\n}"
+    },
+    {
+      "id": "i2-icon-library-single-source",
+      "category": "import",
+      "kind": "asset",
+      "current": "(none — d6 적용 후 외부 링크/메일 아이콘 슬롯 필요)",
+      "target": "Lucide(또는 Tabler) 1개만 고정 — inline SVG로 삽입. raw <img>·emoji 금지",
+      "rationale": "anti-patterns.md #14 — 한 프로젝트는 한 라이브러리만. vanilla 정적 사이트라면 inline SVG 또는 sprite",
+      "occurrences": [{ "file": "(new)", "note": "d6 후속" }],
+      "confidence": 0.7,
+      "needsDecision": true,
+      "decisionPrompt": "vanilla static 환경에서 Lucide CDN(SVG sprite) vs 직접 inline SVG vs CSS mask-image 중 선호 방식?",
+      "risk": "low"
+    },
+    {
+      "id": "i3-lang-toggle-handler-update",
+      "category": "import",
+      "kind": "i18n-logic",
+      "current": "(unverified — scripts/gateway.js 또는 i18n/dict.js의 langToggle 핸들러)",
+      "target": "토글 핸들러에 document.documentElement.lang = locale 갱신 로직 추가. <html lang> + <button aria-pressed> 동기화",
+      "rationale": "r9의 한 부분. WCAG 3.1.2 준수",
+      "occurrences": [{ "file": "scripts/gateway.js", "note": "검증 필요" }],
+      "confidence": 0.8,
+      "needsDecision": false,
+      "risk": "low"
+    }
+  ],
+  "stagingOrder": [
+    {
+      "stage": 1,
+      "label": "P0 — 페이지 무게/일관성 (즉시, 시각 변경 거의 없음)",
+      "items": [
+        "d7-legacy-catalog-css-1to1262",
+        "d8-spinner-slideup-keyframes",
+        "d9-double-deep-shadow-toasts",
+        "r8-fontfamily-pretendard-priority",
+        "r9-html-lang-static",
+        "i3-lang-toggle-handler-update"
+      ]
+    },
+    {
+      "stage": 2,
+      "label": "P1 — 시각 AI-slop 제거 (눈에 띄는 변화, 위험 낮음)",
+      "items": [
+        "d1-hero-drift-animation",
+        "d2-hero-radial-gradients",
+        "d3-destination-gradient-wash",
+        "d4-featured-cover-gradient",
+        "d5-backdrop-filter-blur",
+        "r1-cta-shadow-flat",
+        "r2-card-hover-translateY"
+      ]
+    },
+    {
+      "stage": 3,
+      "label": "P2 — 토큰 정렬 (i1 도입 후 일괄 치환)",
+      "items": [
+        "i1-seed-semantic-token-layer",
+        "r3-radius-chaos-to-r3",
+        "r4-spacing-off-4px-grid",
+        "r5-typography-30-sizes-collapse",
+        "r6-line-height-hardcoded",
+        "r7-eyebrow-letter-spacing-overspread",
+        "r13-error-banner-tokens",
+        "r14-footer-rgba-white-collapse"
+      ]
+    },
+    {
+      "stage": 4,
+      "label": "P3 — anatomy 정렬 (선택, 최대 시각 변경)",
+      "items": [
+        "d6-external-tab-hint-text",
+        "i2-icon-library-single-source",
+        "r10-cta-anatomy-actionbutton",
+        "r11-langtoggle-switch-or-segmented",
+        "r12-connect-mailto-as-listitem"
+      ]
+    }
+  ],
+  "domainExceptions": [
+    {
+      "topic": "brandColor",
+      "current": "#007a63 (KEI green)",
+      "decision": "keep-as-domain",
+      "rationale": "KEI는 환경정책 think tank로 자체 브랜드 정체성 보유. 당근 오렌지로 교체하지 않고 Seed semantic 토큰의 값으로 KEI green을 바인딩 (i1 참조)"
+    }
+  ]
+}
