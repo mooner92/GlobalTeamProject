@@ -34,8 +34,11 @@ const MIME = {
 
 function safeJoin(root, requestPath) {
   const decoded = decodeURIComponent(requestPath.split("?")[0].split("#")[0]);
+  // Route swap: `/` serves the project catalogue (more heavily used).
+  // The legacy gateway/landing remains directly reachable at `/index.html`
+  // via the "Try demo landing page!" CTA in the catalogue header.
   const candidate = normalize(
-    join(root, decoded === "/" ? "/index.html" : decoded),
+    join(root, decoded === "/" ? "/all-projects.html" : decoded),
   );
   if (!candidate.startsWith(root + sep) && candidate !== root) {
     return null;

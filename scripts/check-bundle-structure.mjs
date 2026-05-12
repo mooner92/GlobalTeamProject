@@ -2,18 +2,21 @@
 
 import { readFileSync, existsSync } from "node:fs";
 
+// After ADR-003 (2026-05-12), the catalogue is the main app served at `/`.
+// The legacy gateway/landing remains at `/index.html` as a demo; it has its
+// own minimal asset bundle and is not validated by this guardrail.
 const issues = [];
-const indexPath = "index.html";
+const mainPath = "all-projects.html";
 
-if (!existsSync(indexPath)) {
-  console.error("[check:bundle-structure] FAILED: index.html not found");
+if (!existsSync(mainPath)) {
+  console.error(`[check:bundle-structure] FAILED: ${mainPath} not found`);
   process.exit(1);
 }
 
-const html = readFileSync(indexPath, "utf8");
+const html = readFileSync(mainPath, "utf8");
 
 const requiredAssets = [
-  "styles/main.css",
+  "styles/legacy-catalog.css",
   "scripts/data/contract.js",
   "scripts/app.js",
   "scripts/i18n/dict.js",
@@ -23,13 +26,13 @@ for (const asset of requiredAssets) {
     issues.push(`missing required asset file: ${asset}`);
   }
   if (!html.includes(asset)) {
-    issues.push(`index.html does not reference required asset: ${asset}`);
+    issues.push(`${mainPath} does not reference required asset: ${asset}`);
   }
 }
 
 if (/<style[\s>]/i.test(html)) {
   issues.push(
-    "index.html contains inline <style> block; expected external stylesheet",
+    `${mainPath} contains inline <style> block; expected external stylesheet`,
   );
 }
 
@@ -38,7 +41,7 @@ for (const block of scriptBlocks) {
   const body = (block[1] || "").trim();
   if (body.length > 0) {
     issues.push(
-      "index.html contains inline <script> body; expected external script modules",
+      `${mainPath} contains inline <script> body; expected external script modules`,
     );
     break;
   }
