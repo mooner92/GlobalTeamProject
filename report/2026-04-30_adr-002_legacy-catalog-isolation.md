@@ -1,8 +1,9 @@
 # ADR-002: Legacy 363-row Catalog Isolated to `/all-projects.html`
 
-- **Status**: Accepted (2026-04-30)
+- **Status**: Accepted (2026-04-30) — **partially superseded by ADR-003 (2026-05-12)**
 - **Supersedes**: n/a
-- **Related**: ADR-001 (Gateway model)
+- **Superseded-by (partial)**: ADR-003 — the catalogue is now the **primary** surface served at `/`; the "footer-only quiet link from gateway" decision below is reversed in favor of `/` → catalogue + header CTA `/index.html` → gateway demo
+- **Related**: ADR-001 (Gateway model), ADR-003 (Route swap)
 
 ## Context
 

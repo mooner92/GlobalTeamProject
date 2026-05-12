@@ -50,7 +50,8 @@ npm install
 npm run dev
 ```
 
-- The app is served at `http://127.0.0.1:4173/index.html`
+- The catalogue app is served at `http://127.0.0.1:4173/` (the main route)
+- The Seed-styled gateway demo is reachable at `http://127.0.0.1:4173/index.html` or via the header "Try demo landing page!" button
 - Keep this command running while validating the app locally
 
 4. **Validate runtime health** (in a second terminal)
@@ -59,7 +60,7 @@ npm run dev
 npm run health:app
 ```
 
-- Checks that `/index.html` and `/data/projects.xlsx` are reachable
+- Checks that `/`, `/index.html` (gateway demo), and `/data/projects.xlsx` are reachable
 
 5. **Run quality and verification checks**
 
@@ -105,10 +106,23 @@ Drop project-specific assets under `data/assets/<project-id>/`. Anything in `dat
 
 ## Project Structure
 
+## Routes
+
+| URL                  | Page                        | Purpose                                                                          |
+| -------------------- | --------------------------- | -------------------------------------------------------------------------------- |
+| `/` (default)        | `all-projects.html` content | Primary catalogue — filters, facets, project modal, exports                      |
+| `/all-projects.html` | same as `/`                 | Direct/legacy bookmark path; identical content                                   |
+| `/index.html`        | gateway demo                | Seed-styled landing page for external first-time visitors; opt-in via header CTA |
+
+See `report/2026-05-12_adr-003_route-swap-catalog-primary.md` for the decision history.
+
 ```text
 GlobalTeamProject/
-├── index.html                 # Main application entry
+├── all-projects.html          # Primary catalogue app (served at /)
+├── index.html                 # Gateway demo (Seed-styled landing page)
 ├── styles/                    # Shared stylesheet assets
+│   ├── main.css               # Seed-aligned tokens + gateway styles
+│   └── legacy-catalog.css     # Catalogue explorer styles
 ├── scripts/
 │   ├── ci-local.mjs           # Local quality orchestration
 │   ├── health-app.mjs         # Runtime endpoint checks
@@ -157,9 +171,9 @@ The app supports English and Korean UI:
 Click a project's title to open a detail modal with full metadata:
 
 - Shows project type, title, PI name, project period, and focus areas
-- "Copy link" button copies a shareable URL (e.g., `index.html#project=<id>`) — you can share this link with colleagues and it will open that project's modal directly
+- "Copy link" button copies a shareable URL (e.g., `/?#project=<id>` or `/all-projects.html#project=<id>`) — you can share this link with colleagues and it will open that project's modal directly
 - "Copy citation" button copies a plain-text citation in the current language (Korean or English)
-- Deep-link: opening `index.html#project=<id>` directly in the browser opens that project's modal after the app loads
+- Deep-link: opening `/?#project=<id>` or `/all-projects.html#project=<id>` directly in the browser opens that project's modal after the app loads
 - Press ESC, click the backdrop, or click "Close" to close the modal
 - If the project ID in the URL does not exist, a translated message appears and the modal does not open
 
